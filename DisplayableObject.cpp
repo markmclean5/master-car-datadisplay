@@ -4,8 +4,8 @@
 #include <iostream>
 #include "VG/openvg.h"		//
 #include "VG/vgu.h"			//
-#include "fontinfo.h"		// OpenVG
-#include "shapes.h"			//
+#include "../openvg/fontinfo.h"		// OpenVG
+#include "../openvg/shapes.h"			//
 #include "DisplayableObject.h"
 #include "EGL/egl.h"		// EGL for pbuffers
 #include <stdio.h>

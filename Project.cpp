@@ -5,8 +5,8 @@ using namespace std;
 #include "VG/openvg.h"	//
 #include "VG/vgu.h"		//
 #include "EGL/egl.h"	// EGL for pbuffers
-#include "fontinfo.h"	// Openvg
-#include "shapes.h"		//
+#include "../openvg/fontinfo.h"	// Openvg
+#include "../openvg/shapes.h"		//
 #include <stdlib.h>		//
 #include "Gauge.h"	// Gauge class
 #include "DataStream.h"	// DataStream class
@@ -14,7 +14,6 @@ using namespace std;
 #include <fcntl.h>
 #include <pthread.h>
 #include "avengeance.inc"	// *** Label Fonts
-#include "digits.inc"		// *** Label Fonts
 #include <bcm2835.h>
 #include <vector>
 

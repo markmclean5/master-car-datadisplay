@@ -21,6 +21,6 @@ PID.o: PID.cpp
 
 
 Project: Project $(objects)
-	g++ -Wall -std=gnu++0x $(LIBFLAGS) -o Project $(objects) ../libshapes.o ../oglinit.o -lbcm2835 -lconfig4cpp
+	g++ -Wall -std=gnu++0x $(LIBFLAGS) -o Project $(objects) ../openvg/libshapes.o ../openvg/oglinit.o -lbcm2835 -lconfig4cpp
 	rm *.o
 	rm /tmp/distcc*.*
