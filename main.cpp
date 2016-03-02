@@ -19,7 +19,7 @@ using namespace std;
 
 // Project Classes & utilities
 #include "touchscreen.h"
-#include "project.h"
+#include "main.h"
 #include "Button.h"
 #include "TextView.h"
 #include "Menu.h"

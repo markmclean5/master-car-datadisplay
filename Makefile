@@ -1,11 +1,11 @@
 CXX=distcc arm-linux-gnueabihf-g++ -std=gnu++0x $(INCLUDEFLAGS) -g
 INCLUDEFLAGS=-I/opt/vc/include -I/opt/vc/include/interface/vmcs_host/linux -I/opt/vc/include/interface/vcos/pthreads -I.. -I/home/pi/openvg/client/config4cpp/include
 LIBFLAGS=-L/opt/vc/lib -L/opt/vc/lib -L/home/pi/openvg/client/config4cpp/lib -lGLESv2 -lEGL -lbcm_host -lpthread  -ljpeg
-objects = touchscreen.o Gauge.o TouchableObject.o DisplayableObject.o DataStream.o Button.o TextView.o Menu.o Serial.o parsingUtilities.o PID.o Project.o
+objects = touchscreen.o Gauge.o TouchableObject.o DisplayableObject.o DataStream.o Button.o TextView.o Menu.o Serial.o parsingUtilities.o PID.o main.o
 
-all: $(objects) Project
+all: $(objects) car-datadisplay
 
-Project.o: Project.cpp
+main.o: main.cpp
 
 Menu.o: Menu.cpp
 TextView.o: TextView.cpp
@@ -20,7 +20,7 @@ parsingUtilities.o: parsingUtilities.cpp
 PID.o: PID.cpp
 
 
-Project: Project $(objects)
-	g++ -Wall -std=gnu++0x $(LIBFLAGS) -o Project $(objects) ../openvg/libshapes.o ../openvg/oglinit.o -lbcm2835 -lconfig4cpp
+car-datadisplay: car-datadisplay $(objects)
+	g++ -Wall -std=gnu++0x $(LIBFLAGS) -o car-datadisplay $(objects) ../openvg/libshapes.o ../openvg/oglinit.o -lbcm2835 -lconfig4cpp
 	rm *.o
 	rm /tmp/distcc*.*
