@@ -9,7 +9,6 @@ using namespace std;
 #include "../openvg/shapes.h"		//
 #include <stdlib.h>		//
 #include "Gauge.h"	// Gauge class
-#include "DataStream.h"	// DataStream class
 #include <linux/input.h>
 #include <fcntl.h>
 #include <pthread.h>

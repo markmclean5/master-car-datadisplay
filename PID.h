@@ -98,7 +98,7 @@ public:		// Class members
 	void setReadoutFreq(int);					
 
 	
-	// Getters for DataStream data
+	// Getters for PID data
 	float getRawDatum(void);
 	float getWeightedMADatum(void);
 	float getSimpleMADatum(void);
@@ -106,7 +106,7 @@ public:		// Class members
 	std::string getEngUnits(void);
 
 
-	// Getters for DataStream timing info
+	// Getters for PID timing info
 	float getRawUpdateRate(void);
 	float getReadoutUpdateRate(void);
 

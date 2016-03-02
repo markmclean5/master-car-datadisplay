@@ -166,7 +166,7 @@ string PID::getCommand(void) {
 }
 
 
-// Getters: DataStream outputs
+// Getters: PID outputs
 string PID::getEngUnits(void) {
 	return EngUnits[currentRange-1];
 }
