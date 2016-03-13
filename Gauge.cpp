@@ -42,7 +42,7 @@ void Gauge::configure(string ident) {
 		avengeance_glyphCount);
 
 	try {
-		cfg->parse("/home/pi/openvg/client/testConfig");
+		cfg->parse("/home/pi/master-car-datadisplay/testConfig");
 		// Gauge attributes
 		PIDLink = parseString(cfg, gaugeIdentifier, "PIDLink");
 		numRanges = parseInt(cfg, gaugeIdentifier, "numRanges");

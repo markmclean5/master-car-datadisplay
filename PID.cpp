@@ -37,7 +37,7 @@ void PID::configure(string ident) {
 	setlocale(LC_ALL, "");
 	Configuration * cfg = Configuration::create();
 	try {
-		cfg->parse("/home/pi/openvg/client/PIDConf");
+		cfg->parse("/home/pi/master-car-datadisplay/PIDConf");
 		string PIDName = ident;
 		fullName = parseString(cfg, PIDName, "fullName");
 		shortName = parseString(cfg, PIDName, "shortName");

@@ -80,7 +80,7 @@ int main() {
 	DASHBOARD_Gauges.reserve(4);
 
 	// Draw background
-	Image(0, 0, 800, 480, "/home/pi/openvg/client/wallpaper.jpg");
+	Image(0, 0, 800, 480, "/home/pi/master-car-datadisplay/wallpaper.jpg");
 	BackgroundImage = vgCreateImage(VG_sABGR_8888, 800, 480, VG_IMAGE_QUALITY_BETTER);
 	vgGetPixels(BackgroundImage, 0, 0, 0, 0, 800, 480);
 	

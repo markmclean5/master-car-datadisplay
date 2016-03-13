@@ -222,7 +222,7 @@ void Menu::configure(string ident) {
 	Configuration * cfg = Configuration::create();
 	cout << "Configuring menu: " << ident << endl;
 	try {
-		cfg->parse("/home/pi/openvg/client/testConfig");
+		cfg->parse("/home/pi/master-car-datadisplay/testConfig");
 		string menuName = ident;
 		menuType = parseString(cfg, menuName, "type");
 		cornerRadius = parseInt(cfg, menuName, "cornerRadius");
