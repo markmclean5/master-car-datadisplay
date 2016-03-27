@@ -88,16 +88,17 @@ void TouchableObject::updateVisuals(void) {
 }
 
 /* Update Function */
-void TouchableObject::updateTouch(touch_t touchStruct) {
+void TouchableObject::updateTouch(touch_t* touchStruct) {
+	t = touchStruct;
 	if(touchEnabled) {
-		if(touchStruct.btn_touch) {
+		if(t->btn_touch) {
 			if(isRectangular) {			// Figure out if touch falls within rectangle bounds
 				int xMin = cX - rW/2;
 				int xMax = cX + rW/2;
 				int yMin = cY - rH/2;
 				int yMax = cY + rH/2;
-				if(touchStruct.abs_x >= xMin && touchStruct.abs_x <= xMax) {
-					if(touchStruct.abs_y >= yMin && touchStruct.abs_y <= yMax) touched = true;		
+				if(t->abs_x >= xMin && t->abs_x <= xMax) {
+					if(t->abs_y >= yMin && t->abs_y <= yMax) touched = true;		
 					else {
 						touched = false;
 						touchedOutside = true;
@@ -106,8 +107,8 @@ void TouchableObject::updateTouch(touch_t touchStruct) {
 				else touchedOutside = true;
 			}
 			else {					// Figure out if touch falls within circle bounds
-				float deltaX = touchStruct.abs_x - cX;
-				float deltaY = touchStruct.abs_y - cY;
+				float deltaX = t->abs_x - cX;
+				float deltaY = t->abs_y - cY;
 				float touchDist = sqrt(pow(deltaX, 2) + pow(deltaY, 2));
 				if (touchDist <= cRad) touched = true;
 				else {
@@ -122,6 +123,12 @@ void TouchableObject::updateTouch(touch_t touchStruct) {
 		}
 	}
 	pressProcessing();
+	if(firstCreated) {
+		bool x = isPressed();
+		x = isReleased();
+		pressProcessing();
+		firstCreated = false;
+	}
 }
 
 void TouchableObject::pressProcessing(void) {
@@ -192,13 +199,21 @@ void TouchableObject::setPressDebounce(int duration) {
 	debounceDuration = duration;
 }
 bool TouchableObject::isPressed(void) {
-	if(pressed) pressRead = true;
-	return pressed;
+	bool p = false;
+	if(pressed) {
+		p = true;
+		pressRead = true;
+	}
+	return p;
 }
 
 bool TouchableObject::isReleased(void) {
-	if(released) releaseRead = true;
-	return released;
+	bool r = false;
+	if(released) {
+		r = true;
+		releaseRead = true;
+	} 
+	return r;
 }
 
 
@@ -227,6 +242,7 @@ bool TouchableObject::isTouched(void) {
 
 /* Constructor */
 TouchableObject::TouchableObject(void) {
+	t = NULL;
 	isRectangular = true;
 	cX = 0;
 	cY = 0;
@@ -234,6 +250,7 @@ TouchableObject::TouchableObject(void) {
 	rW = 0;
 	rH = 0;
 
+	firstCreated = true;
 	touchEnabled = false;
 	touched = false;
 	touchedOutside = false;
@@ -288,6 +305,7 @@ void TouchableObject::setRectCenter(int x, int y) {
 /* Touch control */
 void TouchableObject::touchEnable(void) {
 	touchEnabled = true;
+	firstCreated = true;
 }
 void TouchableObject::touchDisable(void) {
 	touchEnabled = false;

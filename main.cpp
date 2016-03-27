@@ -102,7 +102,7 @@ int main() {
 		loopTouch = threadTouch;											// Get touch for loop
 		loopTime = bcm2835_st_read();										// Get time for loop
 		vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);					// Draw background image
-		Mode1Menu.update(loopTouch);										// Update mode menu
+		Mode1Menu.update(&loopTouch);										// Update mode menu
 
 		if(Mode1Menu.isButtonPressed("m1")) Mode1Menu.selectButton("m1");	// Mode menu selection
 		if(Mode1Menu.isButtonPressed("m2")) Mode1Menu.selectButton("m2");
@@ -165,12 +165,12 @@ int main() {
 		
 
 				vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);
-				Mode1Menu.update(loopTouch);
+				Mode1Menu.update(&loopTouch);
 
 
 				// Update all hot buttons
 				for (std::vector<Button>::iterator it = DASHBOARD_HotButtons.begin(); it != DASHBOARD_HotButtons.end(); it++) {
-					(it)->updateTouch(loopTouch);
+					(it)->updateTouch(&loopTouch);
 					(it)->update();
 				}
 
@@ -178,9 +178,10 @@ int main() {
 
 				// Update all gauges
 				for (std::vector<Gauge>::iterator it = DASHBOARD_Gauges.begin(); it != DASHBOARD_Gauges.end(); it++) {
-					(it)->updateTouch(loopTouch);
+					(it)->updateTouch(&loopTouch);
 					string name = (it)->getPIDLink();
-					cout << "Current Gauge PID Link: " << name << endl;
+					if(it->isTouched()) cout << "Gauge " << name << " is touched!" << endl;
+					//cout << "Current Gauge PID Link: " << name << endl;
 					auto CurrentGaugePID_It = find_if(DASHBOARD_PIDs.begin(), DASHBOARD_PIDs.end(), [&name](PID& obj) {return obj.getCommand().compare(name) == 0;});
 					if(CurrentGaugePID_It == DASHBOARD_PIDs.end()) {
 						cout << "PID Not found" << endl;
@@ -190,13 +191,14 @@ int main() {
 						(it)->update((CurrentGaugePID_It)->getRawDatum(), (CurrentGaugePID_It)->getEngUnits());
 					}
 					
+
 					
 				}
 
 				SerialViewer.update();
 				// Update all menus
 				for (std::vector<Menu>::iterator it = DASHBOARD_Menus.begin(); it != DASHBOARD_Menus.end(); it++) {
-					(it)->update(loopTouch);
+					(it)->update(&loopTouch);
 				}
 				// Run DisplayObjectManager (current page dashboard hotbuttons, display objects, and PIDs)
 				DisplayObjectManager(DASHBOARD_HotButtons, DASHBOARD_Gauges, DASHBOARD_PIDs, DASHBOARD_Menus);
@@ -242,10 +244,10 @@ int main() {
 				loopTime = bcm2835_st_read();
 				loopTouch = threadTouch;
 				vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);
-				Mode1Menu.update(loopTouch);
-				SupportedPIDMenu.update(loopTouch);
+				Mode1Menu.update(&loopTouch);
+				SupportedPIDMenu.update(&loopTouch);
 
-				PIDSupportMenu.update(loopTouch);
+				PIDSupportMenu.update(&loopTouch);
 				string menuButton = PIDSupportMenu.getPressedButtonName();
 				if(!menuButton.empty()) {
 					PIDSupportMenu.selectButton(menuButton);
@@ -315,11 +317,10 @@ void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& G
 
 	// Handle all hot button logic here
 	for (std::vector<Button>::iterator currentHotButton = HotButtons.begin(); currentHotButton != HotButtons.end(); currentHotButton++) {
-		if(currentHotButton->isPressed()) currentHotButton->select();
-
-		// When hotbutton is released, disable touch on hotbuttons & display objects
+		// When hotbutton is pressed, disable touch on hotbuttons & display objects
 		// Also create parameter selection menus
-		if(currentHotButton->isReleased()) {
+		if(currentHotButton->isPressed()) {
+			currentHotButton->select();
 			for (std::vector<Button>::iterator hb = HotButtons.begin(); hb != HotButtons.end(); hb++)
 				hb->touchDisable();
 			for (std::vector<Gauge>::iterator g = Gauges.begin(); g != Gauges.end(); g++)
@@ -393,35 +394,43 @@ void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& G
 						if(currentHotButton->isVisible())
 							currentHotButton->touchEnable();
 				}
-				// Re-enable touch on other display objects
-				for (std::vector<Gauge>::iterator g = Gauges.begin(); g != Gauges.end(); g++)
+				// Re-enable touch on other display objects (currently just gauges)
+				for (std::vector<Gauge>::iterator g = Gauges.begin(); g != Gauges.end(); g++){
 					g->touchEnable();
-
-			}
-		}
-	}
-
-
-	// Delete a gauge & corresponding PID when it is pressed and released
-	for (std::vector<Gauge>::iterator currentGauge = Gauges.begin(); currentGauge != Gauges.end(); currentGauge++) {
-		if(currentGauge->isReleased()) {
-			int gX = currentGauge->getDOPosX();
-			int gY = currentGauge->getDOPosY();
-			string PIDLink = currentGauge->getPIDLink();
-			Gauges.erase(currentGauge);
-			for (std::vector<Button>::iterator currentHotButton = HotButtons.begin(); currentHotButton != HotButtons.end(); currentHotButton++) {
-				if(currentHotButton->getDOPosX() == gX && currentHotButton->getDOPosY() == gY) {
-					currentHotButton->setVisible();
-					currentHotButton->touchEnable();
 				}
 			}
-			// Erase corresponding PID
-			auto PID_It = find_if(PIDs.begin(), PIDs.end(), [&PIDLink](const PID& obj) {return obj.command.compare(PIDLink) == 0;});
-			if(PID_It != PIDs.end())
-			PIDs.erase(PID_It);
-			break;
 		}
 	}
+
+
+	// Normal operation - menus not visible
+	else {
+		// Delete a gauge & corresponding PID when it is pressed
+		for (std::vector<Gauge>::iterator currentGauge = Gauges.begin(); currentGauge != Gauges.end(); currentGauge++) {
+			if(currentGauge->isPressed()) {
+				int gX = currentGauge->getDOPosX();
+				int gY = currentGauge->getDOPosY();
+				string PIDLink = currentGauge->getPIDLink();
+				cout << PIDLink << " Gauge released.. deleting.." << endl;
+				Gauges.erase(currentGauge);
+				for (std::vector<Button>::iterator currentHotButton = HotButtons.begin(); currentHotButton != HotButtons.end(); currentHotButton++) {
+					if(currentHotButton->getDOPosX() == gX && currentHotButton->getDOPosY() == gY) {
+						currentHotButton->setVisible();
+						currentHotButton->touchEnable();
+					}
+				}
+				// Erase corresponding PID
+				auto PID_It = find_if(PIDs.begin(), PIDs.end(), [&PIDLink](const PID& obj) {return obj.command.compare(PIDLink) == 0;});
+				if(PID_It != PIDs.end()) {
+					cout << "Also deleting PID.." << endl;
+					PIDs.erase(PID_It);				
+				}
+				break;
+			}
+		}
+	}
+
+
 
 }
 

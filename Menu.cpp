@@ -67,7 +67,7 @@ Menu::~Menu(void) {
 }
 
 /* Menu update function: updates buttons, states, and draws menu */
-void Menu::update(touch_t menuTouch) {
+void Menu::update(touch_t * menuTouch) {
 	//cout << "Menu update called for " << menuIdentifier << endl;
 	uint64_t currentTime = bcm2835_st_read();
 	updateVisuals();

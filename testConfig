@@ -46,6 +46,7 @@ HOTBUTTON_GroupMenu {
 	titleColor = ["1.0", "0.0", "0.0", "1.0"];
 	scrollable = "false";
 	numButtons = "5";
+	totalItems = "5";
 	buttonPadding = "7";
 	cornerRadius = "10";
 	borderWidth = "1";
@@ -87,6 +88,7 @@ HOTBUTTON_DisplayObjectMenu {
 	titleColor = ["1.0", "0.0", "0.0", "1.0"];
 	scrollable = "false";
 	numButtons = "5";
+	totalItems = "5";
 	buttonPadding = "7";
 	cornerRadius = "10";
 	borderWidth = "1";

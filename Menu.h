@@ -100,7 +100,7 @@ public:
 	string menuType;
 	Menu(int, int, int, int, string);		// Menu Constructor: center X, center Y, width, height, identifier
 	
-	void update(touch_t);					// Menu update function: draws menu & updates buttons with provided touch data
+	void update(touch_t*);					// Menu update function: draws menu & updates buttons with provided touch data
 	bool isButtonPressed(string);			// Checks menu pressed states to return the press state of button with the provided name
 	bool isButtonSelected(string);			// Checks menu select states to return the select state of button with the provided name
 	void selectButton(string);				// Select the button with the provided name

@@ -40,7 +40,10 @@ private:
 	bool touched;		// Current touch state
 	bool touchedOutside;// Current touch does not fall within object
 
+	touch_t * t;
+
 	/* Press processing properties */
+	bool firstCreated;
 	bool pressDebounceEnabled;
 	uint64_t pressStartTime;
 	uint64_t pressOutsideStartTime;
@@ -64,7 +67,6 @@ private:
 
 	/* Movement Properties */
 	bool moving;
-
 
 	bool movingOffRight;	// In process of moving object off of the screen to the right
 	bool movingOnRight;		// In process of moving object onto the screen from the right
@@ -120,10 +122,6 @@ protected:
 	void setRectCenter(int, int);		// Called by derived class to set rectangular touch area bottom left corner
 
 public:
-
-	virtual void update(void){}
-	virtual void update(touch_t){}
-
 	/* Control methods */
 	void touchEnable(void);				// Enables touch functionality
 	void touchDisable(void);			// Disables touch functionality
@@ -146,7 +144,7 @@ public:
 	void moveOnTop(void);				// Moves object back onto the screen to its previous position from the top
 
 	/* Touch methods */
-	void updateTouch(touch_t);			// Provides touch data to object for touch processing
+	void updateTouch(touch_t*);			// Provides touch data to object for touch processing
 	bool isTouched(void);				// Returns if the object is currently being touched
 	bool isHeld(void);					// Returns if the object is being touched and held  **** Need to define threshold ****
 	bool isReleased(void);				// Returns if the object was released following a touch

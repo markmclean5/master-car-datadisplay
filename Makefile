@@ -23,4 +23,3 @@ PID.o: PID.cpp
 car-datadisplay: car-datadisplay $(objects)
 	g++ -Wall -std=gnu++0x $(LIBFLAGS) -o car-datadisplay $(objects) ../openvg/libshapes.o ../openvg/oglinit.o -lbcm2835 -lconfig4cpp
 	rm *.o
-	rm /tmp/distcc*.*

@@ -172,7 +172,7 @@ string PID::getEngUnits(void) {
 }
 
 float PID::getRawDatum(void) {
-	cout << "get raw datum called for "<< getCommand() <<"  - range: " << currentRange << endl;
+	//cout << "get raw datum called for "<< getCommand() <<"  - range: " << currentRange << endl;
 	float* currentSimpleMAData = simpleMAData[currentRange-1];
 	return currentSimpleMAData[simpleMALag[currentRange-1]-1];			// returns most recent value
 }
@@ -223,6 +223,7 @@ float PID::getReadoutUpdateRate(void)
 
 void PID::update (string serialData, uint64_t updateTime) {
 	cout << "PID update called for: " << getCommand() << endl;
+	cout << "  With " << serialData << endl;
 	currentTime = updateTime;
 	uint64_t timeDelta = currentTime - lastTime;
 	lastTime = currentTime;
