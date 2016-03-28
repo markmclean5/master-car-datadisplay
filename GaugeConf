@@ -1,0 +1,441 @@
+# Gauge Configuration file
+
+0104Gauge {
+	PIDLink = "0104";
+	numRanges = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
+	needleColor = ["1.0", "0.0", "0.0", "1.0"];
+	pressDebounce = "500";
+	range1 {
+		engUnits = "pct";
+		dataRangeStart	=	"0";
+		dataRangeStop	= "100";
+		angleRangeStart = "0";
+		angleRangeStop = "-180";
+		majorTickInterval = "10";
+		minorTickInterval = "20";
+		labelValueStart = "0";
+		labelValueStop = "100";
+		labelAngleStart = "0";
+		labelAngleStop = "180";
+		labelIncrement = "20";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+};
+
+# 0105 - Engine Coolant Temperature
+0105Gauge {
+	PIDLink = "0105";
+	numRanges = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
+	needleColor = ["1.0", "0.0", "0.0", "1.0"];
+	pressDebounce = "500";
+	range1 {
+		engUnits = "degC";
+		dataRangeStart	=	"-40";
+		dataRangeStop	= "215";
+		angleRangeStart = "0";
+		angleRangeStop = "-180";
+		majorTickInterval = "40";
+		minorTickInterval = "20";
+		labelValueStart = "-40";
+		labelValueStop = "215";
+		labelAngleStart = "0";
+		labelAngleStop = "180";
+		labelIncrement = "40";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+};
+
+# 0106 - Short Term Fuel Pct Trim - Bank 1
+0106Gauge {
+	PIDLink = "0106";
+	numRanges = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
+	needleColor = ["1.0", "0.0", "0.0", "1.0"];
+	pressDebounce = "500";
+	range1 {
+		engUnits = "pct";
+		dataRangeStart	=	"-100";
+		dataRangeStop	= "99.92";
+		angleRangeStart = "0";
+		angleRangeStop = "-180";
+		majorTickInterval = "20";
+		minorTickInterval = "5";
+		labelValueStart = "-100";
+		labelValueStop = "100";
+		labelAngleStart = "0";
+		labelAngleStop = "180";
+		labelIncrement = "20";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+};
+
+# 0107 - Long Term Fuel Pct Trim - Bank 1
+0107Gauge {
+	PIDLink = "0107";
+	numRanges = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
+	needleColor = ["1.0", "0.0", "0.0", "1.0"];
+	pressDebounce = "500";
+	range1 {
+		engUnits = "pct";
+		dataRangeStart	=	"-100";
+		dataRangeStop	= "99.92";
+		angleRangeStart = "0";
+		angleRangeStop = "-180";
+		majorTickInterval = "20";
+		minorTickInterval = "5";
+		labelValueStart = "-100";
+		labelValueStop = "100";
+		labelAngleStart = "0";
+		labelAngleStop = "180";
+		labelIncrement = "20";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+};
+
+
+# 0108 - Short Term Fuel Pct Trim - Bank 2
+0108Gauge {
+	PIDLink = "0108";
+	numRanges = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
+	needleColor = ["1.0", "0.0", "0.0", "1.0"];
+	pressDebounce = "500";
+	range1 {
+		engUnits = "pct";
+		dataRangeStart	=	"-100";
+		dataRangeStop	= "99.92";
+		angleRangeStart = "0";
+		angleRangeStop = "-180";
+		majorTickInterval = "20";
+		minorTickInterval = "5";
+		labelValueStart = "-100";
+		labelValueStop = "100";
+		labelAngleStart = "0";
+		labelAngleStop = "180";
+		labelIncrement = "20";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+};
+
+# 0109 - Long Term Fuel Pct Trim - Bank 2
+0109Gauge {
+	PIDLink = "0109";
+	numRanges = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
+	needleColor = ["1.0", "0.0", "0.0", "1.0"];
+	pressDebounce = "500";
+	range1 {
+		engUnits = "pct";
+		dataRangeStart	=	"-100";
+		dataRangeStop	= "99.92";
+		angleRangeStart = "0";
+		angleRangeStop = "-180";
+		majorTickInterval = "20";
+		minorTickInterval = "5";
+		labelValueStart = "-100";
+		labelValueStop = "100";
+		labelAngleStart = "0";
+		labelAngleStop = "180";
+		labelIncrement = "20";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+};
+
+# 010A - Fuel Pressure
+010AGauge {
+	PIDLink = "010A";
+	numRanges = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
+	needleColor = ["1.0", "0.0", "0.0", "1.0"];
+	pressDebounce = "500";
+	range1 {
+		engUnits = "kPa";
+		dataRangeStart	=	"0";
+		dataRangeStop	= "765";
+		angleRangeStart = "0";
+		angleRangeStop = "-180";
+		majorTickInterval = "100";
+		minorTickInterval = "25";
+		labelValueStart = "0";
+		labelValueStop = "765";
+		labelAngleStart = "0";
+		labelAngleStop = "180";
+		labelIncrement = "100";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+};
+
+# 010B - Intake Manifold Absolute Pressure
+010BGauge {
+	PIDLink = "010B";
+	numRanges = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
+	needleColor = ["1.0", "0.0", "0.0", "1.0"];
+	pressDebounce = "500";
+	range1 {
+		engUnits = "kPa";
+		dataRangeStart	=	"0";
+		dataRangeStop	= "255";
+		angleRangeStart = "0";
+		angleRangeStop = "-180";
+		majorTickInterval = "50";
+		minorTickInterval = "25";
+		labelValueStart = "0";
+		labelValueStop = "255";
+		labelAngleStart = "0";
+		labelAngleStop = "180";
+		labelIncrement = "50";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+};
+
+# 010C - Engine RPM
+010CGauge {
+	PIDLink = "010C";
+	numRanges = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
+	needleColor = ["1.0", "0.0", "0.0", "1.0"];
+	pressDebounce = "500";
+	range1 {
+		engUnits = "RPM";
+		dataRangeStart	=	"0";
+		dataRangeStop	= "6000";
+		angleRangeStart = "0";
+		angleRangeStop = "-180";
+		majorTickInterval = "1000";
+		minorTickInterval = "250";
+		labelValueStart = "0";
+		labelValueStop = "6";
+		labelAngleStart = "0";
+		labelAngleStop = "180";
+		labelIncrement = "1";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+};
+
+# 010D - Vehicle Speed
+010DGauge {
+	PIDLink = "010D";
+	numRanges = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
+	needleColor = ["1.0", "0.0", "0.0", "1.0"];
+	pressDebounce = "500";
+	range1 {
+		engUnits = "km/h";
+		dataRangeStart	=	"0";
+		dataRangeStop	= "255";
+		angleRangeStart = "0";
+		angleRangeStop = "-180";
+		majorTickInterval = "40";
+		minorTickInterval = "10";
+		labelValueStart = "0";
+		labelValueStop = "255";
+		labelAngleStart = "0";
+		labelAngleStop = "180";
+		labelIncrement = "40";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+};
+
+# 010E - Timing Advance
+010EGauge {
+	PIDLink = "010E";
+	numRanges = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
+	needleColor = ["1.0", "0.0", "0.0", "1.0"];
+	pressDebounce = "500";
+	range1 {
+		engUnits = "deg";
+		dataRangeStart	=	"-64";
+		dataRangeStop	= "63.5";
+		angleRangeStart = "0";
+		angleRangeStop = "-180";
+		majorTickInterval = "16";
+		minorTickInterval = "4";
+		labelValueStart = "-64";
+		labelValueStop = "64";
+		labelAngleStart = "0";
+		labelAngleStop = "180";
+		labelIncrement = "16";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+};
+
+# 010F - Intake Air Temperature
+010FGauge {
+	PIDLink = "010F";
+	numRanges = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
+	needleColor = ["1.0", "0.0", "0.0", "1.0"];
+	pressDebounce = "500";
+	range1 {
+		engUnits = "degC";
+		dataRangeStart	=	"-40";
+		dataRangeStop	= "215";
+		angleRangeStart = "0";
+		angleRangeStop = "-180";
+		majorTickInterval = "40";
+		minorTickInterval = "10";
+		labelValueStart = "-40";
+		labelValueStop = "215";
+		labelAngleStart = "0";
+		labelAngleStop = "180";
+		labelIncrement = "40";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+};
+
+# 0110 - MAF Air Flow Rate
+0110Gauge {
+	PIDLink = "0110";
+	numRanges = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
+	needleColor = ["1.0", "0.0", "0.0", "1.0"];
+	pressDebounce = "500";
+	range1 {
+		engUnits = "g/s";
+		dataRangeStart	=	"0";
+		dataRangeStop	= "655.35";
+		angleRangeStart = "0";
+		angleRangeStop = "-180";
+		majorTickInterval = "100";
+		minorTickInterval = "25";
+		labelValueStart = "0";
+		labelValueStop = "655.35";
+		labelAngleStart = "0";
+		labelAngleStop = "180";
+		labelIncrement = "100";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+};
+
+# 0111 - Throttle Position
+0111Gauge {
+	PIDLink = "0111";
+	numRanges = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
+	needleColor = ["1.0", "0.0", "0.0", "1.0"];
+	pressDebounce = "500";
+	range1 {
+		engUnits = "pct";
+		dataRangeStart	=	"0";
+		dataRangeStop	= "100";
+		angleRangeStart = "0";
+		angleRangeStop = "-180";
+		majorTickInterval = "20";
+		minorTickInterval = "5";
+		labelValueStart = "0";
+		labelValueStop = "100";
+		labelAngleStart = "0";
+		labelAngleStop = "180";
+		labelIncrement = "20";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+};
+
+# --------------------
+#
+# --------------------
+BoostGauge {
+	gaugeGroup = "gauges";
+	numRanges = "2";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
+	needleColor = ["1.0", "0.0", "0.0", "1.0"];
+	pressDebounce = "500";
+	range1 {
+		engUnits = "PSI";
+		dataRangeStart	=	"0";
+		dataRangeStop	= "30";
+		angleRangeStart = "0";
+		angleRangeStop = "-180";
+		majorTickInterval = "5";
+		minorTickInterval = "1";
+		labelValueStart = "0";
+		labelValueStop = "30";
+		labelAngleStart = "0";
+		labelAngleStop = "180";
+		labelIncrement = "5";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+	range2 {
+		engUnits ="inHg";
+		dataRangeStart = "0";
+		dataRangeStop = "30";
+		angleRangeStart = "0";
+		angleRangeStop = "90";
+		majorTickInterval = "10";
+		minorTickInterval = "2";
+		labelValueStart = "10";
+		labelValueStop = "30";
+		labelAngleStart = "-30";
+		labelAngleStop = "-90";
+		labelIncrement = "10";
+		labelDecPlaces = "0";
+		majorTickColor = ["1.0", "0.0", "0.0", "1.0"];
+		minorTickColor = ["1.0", "1.0", "1.0", "1.0"];
+		labelColor = ["1.0", "0.0", "0.0", "1.0"];
+	};
+};

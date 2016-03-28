@@ -108,8 +108,6 @@
 
 }
 
-
-
 0104 {
 	fullName = "Calculated Engine Load";
 	shortName = "Calc Load";
