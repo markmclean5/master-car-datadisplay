@@ -547,9 +547,21 @@ string Menu::getSelectedButtonName(void) {
 
 
 void Menu::addItem(string name, string text) {
-	cout << "add menu item" << endl;
+	cout << "add menu item - initial items: " << totalItems << endl;
 	buttonNames[totalItems] = name;
 	buttonCfgText[totalItems] = text;
+	if(totalItems < numButtons) {
+		menuButtons[totalItems].setName(buttonNames[totalItems]);
+		menuButtons[totalItems].setText(buttonCfgText[totalItems]);
+		cout << "Adding button # " << totalItems << endl;
+		activeButtons++;
+		menuItemsRemaining++;	
+	}
+	else
+	{
+		menuItemsRemaining++;
+	}
 	totalItems++;
+	cout << "added menu item - total items: " << totalItems << endl;
 	bufferSaved = false;
 }
