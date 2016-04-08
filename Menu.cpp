@@ -100,7 +100,7 @@ void Menu::update(touch_t * menuTouch) {
 	
 	// Previous button pressed
 	if(scrollable && prevButton && previousBtn->isPressed()) {
-		cout << "prev btn pressed" << endl;
+		cout << "Prev pressed - number of items remaining " << menuItemsRemaining << endl;
 		uint64_t currentTime = bcm2835_st_read();
 		prevBtnSelectionStart = currentTime;
 		prevBtnSelectionEnd = prevBtnSelectionStart + (1000*timedSelectDuration);
@@ -110,7 +110,7 @@ void Menu::update(touch_t * menuTouch) {
 			topMenuItemIndex -= scrollItems;
 			menuItemsRemaining += scrollItems;
 		}
-		if(activeButtons < numButtons) activeButtons += scrollItems;
+		if(activeButtons < numButtons) activeButtons = scrollItems;
 		int currentButton = 1;
 		for(;currentButton<=activeButtons;currentButton++) {
 			menuButtons[currentButton-1].setName(buttonNames[topMenuItemIndex+currentButton-1]);
@@ -121,11 +121,13 @@ void Menu::update(touch_t * menuTouch) {
 			else menuButtons[currentButton-1].deselect();
 
 		}
+		cout << "Previous page - number of items remaining " << menuItemsRemaining << endl;
 		bufferSaved = false;
 	}
 
 	// Next button pressed
 	if(scrollable && nextButton && nextBtn->isPressed()) {
+		cout << "Next pressed - number of items remaining " << menuItemsRemaining << endl;
 		uint64_t currentTime = bcm2835_st_read();
 		nextBtnSelectionStart = currentTime;
 		nextBtnSelectionEnd = nextBtnSelectionStart + (1000*timedSelectDuration);
@@ -141,8 +143,8 @@ void Menu::update(touch_t * menuTouch) {
 			menuButtons[currentButton-1].setText(buttonCfgText[topMenuItemIndex+currentButton-1]);
 			if(buttonSelectStates[topMenuItemIndex+currentButton-1]) menuButtons[currentButton-1].select();
 			else menuButtons[currentButton-1].deselect();
-
 		}
+		cout << "Next page - number of items remaining " << menuItemsRemaining << endl;
 		bufferSaved = false;
 	}
 
@@ -547,9 +549,22 @@ string Menu::getSelectedButtonName(void) {
 
 
 void Menu::addItem(string name, string text) {
-	cout << "add menu item" << endl;
+	cout << "add menu item - initial items: " << totalItems << endl;
 	buttonNames[totalItems] = name;
 	buttonCfgText[totalItems] = text;
+	if(totalItems < numButtons) {
+		menuButtons[totalItems].setName(buttonNames[totalItems]);
+		menuButtons[totalItems].setText(buttonCfgText[totalItems]);
+		cout << "Adding button # " << totalItems << endl;
+		activeButtons++;
+		menuItemsRemaining++;	
+	}
+	else
+	{
+		menuItemsRemaining++;
+	}
 	totalItems++;
+	cout << "added menu item - total items: " << totalItems << endl;
+	cout << "Addition complete - menuItems remaining "<< menuItemsRemaining << endl;
 	bufferSaved = false;
 }
