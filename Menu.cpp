@@ -565,6 +565,9 @@ void Menu::addItem(string name, string text) {
 	}
 	totalItems++;
 	cout << "added menu item - total items: " << totalItems << endl;
+<<<<<<< HEAD
 	cout << "Addition complete - menuItems remaining "<< menuItemsRemaining << endl;
+=======
+>>>>>>> e2eaf5b2f2950e6d19e52f283a47b34bcd336556
 	bufferSaved = false;
 }
