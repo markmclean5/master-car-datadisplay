@@ -108,6 +108,115 @@
 
 }
 
+0120 {
+	fullName = "Supported PIDs 0121 - 0140";
+	shortName = "PIDs 0121-0140";
+	type = "bit-encoded";
+	numDataBytes = "4";
+	command = "0120";
+	A7_name = "0121";
+	A7_0state = "false";
+	A7_1state = "true";
+	A6_name = "0122";
+	A6_0state = "false";
+	A6_1state = "true";
+	A5_name = "0123";
+	A5_0state = "false";
+	A5_1state = "true";
+	A4_name = "0124";
+	A4_0state = "false";
+	A4_1state = "true";
+	A3_name = "0125";
+	A3_0state = "false";
+	A3_1state = "true";
+	A2_name = "0126";
+	A2_0state = "false";
+	A2_1state = "true";
+	A1_name = "0127";
+	A1_0state = "false";
+	A1_1state = "true";
+	A0_name = "0128";
+	A0_0state = "false";
+	A0_1state = "true";
+
+	B7_name = "0129";
+	B7_0state = "false";
+	B7_1state = "true";
+	B6_name = "012A";
+	B6_0state = "false";
+	B6_1state = "true";
+	B5_name = "012B";
+	B5_0state = "false";
+	B5_1state = "true";
+	B4_name = "012C";
+	B4_0state = "false";
+	B4_1state = "true";
+	B3_name = "012D";
+	B3_0state = "false";
+	B3_1state = "true";
+	B2_name = "012E";
+	B2_0state = "false";
+	B2_1state = "true";
+	B1_name = "012F";
+	B1_0state = "false";
+	B1_1state = "true";
+	B0_name = "0130";
+	B0_0state = "false";
+	B0_1state = "true";
+
+	C7_name = "0131";
+	C7_0state = "false";
+	C7_1state = "true";
+	C6_name = "0132";
+	C6_0state = "false";
+	C6_1state = "true";
+	C5_name = "0133";
+	C5_0state = "false";
+	C5_1state = "true";
+	C4_name = "0134";
+	C4_0state = "false";
+	C4_1state = "true";
+	C3_name = "0135";
+	C3_0state = "false";
+	C3_1state = "true";
+	C2_name = "0136";
+	C2_0state = "false";
+	C2_1state = "true";
+	C1_name = "0137";
+	C1_0state = "false";
+	C1_1state = "true";
+	C0_name = "0138";
+	C0_0state = "false";
+	C0_1state = "true";
+
+	D7_name = "0139";
+	D7_0state = "false";
+	D7_1state = "true";
+	D6_name = "013A";
+	D6_0state = "false";
+	D6_1state = "true";
+	D5_name = "013B";
+	D5_0state = "false";
+	D5_1state = "true";
+	D4_name = "013C";
+	D4_0state = "false";
+	D4_1state = "true";
+	D3_name = "013D";
+	D3_0state = "false";
+	D3_1state = "true";
+	D2_name = "013E";
+	D2_0state = "false";
+	D2_1state = "true";
+	D1_name = "013F";
+	D1_0state = "false";
+	D1_1state = "true";
+	D0_name = "0140";
+	D0_0state = "false";
+	D0_1state = "true";
+
+}
+
+
 0104 {
 	fullName = "Calculated Engine Load";
 	shortName = "Calc Load";

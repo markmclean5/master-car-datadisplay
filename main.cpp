@@ -253,11 +253,19 @@ int main() {
 					PIDSupportMenu.selectButton(menuButton);
 				}
 
-				if(!PIDSupportMenu.getSelectedButtonName().empty() && SupportPIDs.size() == 0) {
-					cout << "requesting supported pids - " << PIDSupportMenu.getSelectedButtonName() << endl;
-					SupportPIDs.emplace_back(PIDSupportMenu.getSelectedButtonName());
+				string pressedBtn = PIDSupportMenu.getPressedButtonName();
+				if(!pressedBtn.empty()) {
 
-					SupportPIDs.back().update("41 00 00 00 FF FF", loopTime);
+				//if(!PIDSupportMenu.getSelectedButtonName().empty() && SupportPIDs.size() == 0) {
+					cout << "requesting supported pids - " << pressedBtn << endl;
+					SupportPIDs.emplace_back(pressedBtn);
+
+
+					string simResponse = pressedBtn;
+					simResponse[0] = '4';
+					simResponse.append(" FF FF FF FF");
+
+					SupportPIDs.back().update(simResponse, loopTime);
 
 					for(int i = 0; i < SupportPIDs.back().getNumBits(); i++) {
 						cout << i << " - Name "<< SupportPIDs.back().getBitPositionName(i) << " - State " << SupportPIDs.back().getBitPositionState(i) << endl;
