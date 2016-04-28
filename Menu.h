@@ -29,8 +29,9 @@ private:
 	int pressDebounce;
 
 
-	// Empty Menu
+	// Dynamic Menu
 	bool dynamic;
+	int previousTotalItems;
 
 	// Menu Title
 	bool titled;

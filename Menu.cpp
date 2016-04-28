@@ -54,6 +54,7 @@ Menu::Menu(int cx, int cy, int w, int h, string identifier) {
 	title = "";
 	topMenuItemIndex = 0;
 	menuItemsRemaining = 0;
+	previousTotalItems = 0;
 	configure(menuIdentifier);		// Configure the menu
 }
 
@@ -160,7 +161,7 @@ void Menu::update(touch_t * menuTouch) {
 
 	// Dynamic menu changes
 	if(dynamic) {
-		//if(totalItems != 0) cout << "totalItems " << totalItems << " activeButtons " << activeButtons << endl;
+		// Add more buttons to the menu if items are added and not all buttons are active
 		if (totalItems > activeButtons && totalItems <= numButtons) {
 			cout << "dynamic menu changes" << endl;
 			for(int b = activeButtons; b < totalItems; b++) {
@@ -169,6 +170,19 @@ void Menu::update(touch_t * menuTouch) {
 				activeButtons++;	
 			}
 			menuItemsRemaining = totalItems;
+		}
+
+		// Reset the menu to the first page of items when new items are added
+		if(totalItems != previousTotalItems) {
+			cout << "Resetting to top of menu - total items " << totalItems << " prev total " << previousTotalItems << endl;
+			for(int b = 0; b < activeButtons; b++) {
+				menuButtons[b].setName(buttonNames[b]);
+				menuButtons[b].setText(buttonCfgText[b]);
+			}
+			previousTotalItems = totalItems;
+			menuItemsRemaining = totalItems;
+
+			cout << "Reset prev total items " << previousTotalItems << endl;
 		}
 	}
 

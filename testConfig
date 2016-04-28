@@ -472,7 +472,7 @@ PIDSupport {
 	type = "PIDSupportMenu";
 	titled = "true";
 	titlePercentHeight = "9";
-	titleText = "PID Support";
+	titleText = "Query Support";
 	titleFontSize = "20";
 	titleColor = ["1.0", "0.0", "0.0", "1.0"];
 	scrollable = "false";
@@ -623,7 +623,7 @@ Mode1Menu {
 	buttonName4 = "m4";
 	buttonText4 = "Monitor";
 	buttonName5 = "m5";
-	buttonText5 = "Comm";
+	buttonText5 = "PID Support";
 };
 
 
@@ -662,5 +662,34 @@ SerialViewerMenu {
 	buttonText4 = "Clear";
 };
 
+
+ConnectButton {
+	name = "connectBtn";
+	cornerRadius = "20";
+	borderWidth = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "C";
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	defaultText = "Connect";
+	enableValue = "false";
+	pressDebounce = "500";
+	selectable = "true";
+	selectedBackgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	selectedBorderColor = ["1.0", "0.0", "0.0", "1.0"];
+	selectedBorderWidth = "3";
+	selectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
+};
+
+ConnectView {
+	cornerRadius = "10";
+	borderWidth = "2";
+	borderColor = ["0.43", "0.43", "0.43", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	numLines = "15";
+	pressDebounce = "500";
+}
 
 

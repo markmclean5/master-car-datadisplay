@@ -227,6 +227,53 @@ int main() {
 		}
 
 		//////////////////////////////////////
+		// Mode 4 - Communication test mode
+		//////////////////////////////////////
+		if(Mode1Menu.isButtonSelected("m4")) {
+			bool connected = false;
+			string status = "";
+
+			TextView ConnectLog (width/2, height/2-50, width/3-20, 360, "ConnectView");
+			TextView ConnectStats(width-width/6, height/2 - 50, width/3-20, 360, "ConnectView");
+			Button ConnectButton(width/6, height/2-50, 100, 100, "ConnectButton");
+
+			while(1) {
+				loopTime = bcm2835_st_read();
+				loopTouch = threadTouch;
+				vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);
+				Mode1Menu.update(&loopTouch);
+
+				// Drawing
+				Fill(255,255,255,1);
+				TextMid(width/2, height - 100, "Connection Log", SansTypeface, 20);
+				TextMid(width-width/6, height - 100, "Connection Stats", SansTypeface, 20);
+
+				ConnectButton.updateTouch(&loopTouch);
+				ConnectButton.update();
+				ConnectLog.update();
+				ConnectStats.update();
+
+				if(Mode1Menu.isButtonPressed("m1")) {
+					Mode1Menu.selectButton("m1");
+					break;
+				}
+				if(Mode1Menu.isButtonPressed("m2")) {
+					Mode1Menu.selectButton("m2");
+					break;
+				}
+				if(Mode1Menu.isButtonPressed("m3")) {
+					Mode1Menu.selectButton("m3");
+					break;
+				}
+				if(Mode1Menu.isButtonPressed("m5")) {
+					Mode1Menu.selectButton("m5");
+					break;
+				}
+				End();
+			}
+
+		}
+		//////////////////////////////////////
 		// Mode 5 - PID Support Check
 		//////////////////////////////////////
 		if(Mode1Menu.isButtonSelected("m5")) {

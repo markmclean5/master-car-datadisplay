@@ -46,6 +46,9 @@ void TextView::configure(string ident) {
 		numLines = parseInt(cfg, textViewName, "numLines");
 		if(numLines==0) numLines = 1;
 		textViewData = new string[numLines];
+	 	lineIdentifiers = new string[numLines];
+		lineLabels = new string[numLines];
+		lineText = new string[numLines];
 
 		parseColor(cfg, textViewName, textColor, "textColor");
 		textColorAlpha = textColor[3];
@@ -144,4 +147,13 @@ void TextView::addNewLine (string line, float* color) {
 	}
 	if(currentLine <= numLines-1)
 		currentLine++;
+}
+
+
+void TextView::addNewLineIdentifier(string newIdentifier, string newIdentifierText){		// Add Line identifier, line label
+
+}
+
+void TextView::setLineIdentiferText(string lineIdentifier, string lineText){				// Set line text (identifier, new text)
+
 }
