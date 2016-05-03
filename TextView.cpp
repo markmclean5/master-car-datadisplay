@@ -149,11 +149,26 @@ void TextView::addNewLine (string line, float* color) {
 		currentLine++;
 }
 
-
-void TextView::addNewLineIdentifier(string newIdentifier, string newIdentifierText){		// Add Line identifier, line label
-
+void TextView::updateLine(int line, string data) {
+	if(line > numLines-1)
+		line = numLines;
+	textViewData[line] = data;
 }
 
-void TextView::setLineIdentiferText(string lineIdentifier, string lineText){				// Set line text (identifier, new text)
+void TextView::addNewLineIdentifier(string newIdentifier, string newIdentifierText){		// Add Line identifier, line label
+	lineIdentifiers[currentLine] = newIdentifier;
+	lineLabels[currentLine] = newIdentifierText;
+	if(currentLine <= numLines-1)
+		currentLine++;
+}
 
+void TextView::setLineIdentifierText(string lineIdentifier, string newText){				// Set line text (identifier, new text)
+	int matchingLine = -1;
+	for(int l=0; l<numLines-1; l++) {
+		if(lineIdentifiers[l].compare(lineIdentifier) == 0)
+			matchingLine = l;
+	}
+	if(matchingLine > -1) {
+		textViewData[matchingLine].assign(lineLabels[matchingLine] + newText);
+	}
 }

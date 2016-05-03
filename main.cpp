@@ -236,6 +236,27 @@ int main() {
 			TextView ConnectLog (width/2, height/2-50, width/3-20, 360, "ConnectView");
 			TextView ConnectStats(width-width/6, height/2 - 50, width/3-20, 360, "ConnectView");
 			Button ConnectButton(width/6, height/2-50, 100, 100, "ConnectButton");
+			ConnectButton.touchEnable();
+
+
+			int currentState = 0;
+			ConnectLog.addNewLineIdentifier("currentState", "Current State: ");
+			ConnectLog.setLineIdentifierText("currentState", "---");
+			int totalMessages = 0;
+			ConnectLog.addNewLineIdentifier("totalMsgs", "Total Messages: ");
+			ConnectLog.setLineIdentifierText("totalMsgs", "---");
+			int requestMessages = 0;
+			ConnectLog.addNewLineIdentifier("reqMsgs", "Requests: ");
+			ConnectLog.setLineIdentifierText("reqMsgs", "---");
+			int responseMessages = 0;
+			ConnectLog.addNewLineIdentifier("respMsgs", "Responses: ");
+			ConnectLog.setLineIdentifierText("respMsgs", "---");
+			int validMessages = 0;
+			ConnectLog.addNewLineIdentifier("validMsgs", "Valid: ");
+			ConnectLog.setLineIdentifierText("validMsgs", "---");
+			int invalidMessages = 0;
+			ConnectLog.addNewLineIdentifier("invalidMsgs", "Invalid: ");
+			ConnectLog.setLineIdentifierText("invalidMsgs", "---");			
 
 			while(1) {
 				loopTime = bcm2835_st_read();
@@ -247,6 +268,11 @@ int main() {
 				Fill(255,255,255,1);
 				TextMid(width/2, height - 100, "Connection Log", SansTypeface, 20);
 				TextMid(width-width/6, height - 100, "Connection Stats", SansTypeface, 20);
+
+				if(ConnectButton.isPressed()) {
+			
+				}
+
 
 				ConnectButton.updateTouch(&loopTouch);
 				ConnectButton.update();

@@ -39,6 +39,8 @@ private:
 
 	float** lineColors;
 
+	void updateLine(int, string);
+
 public:
 	TextView(int, int, int, int, string);			// TextView Constructor: center X, center Y, width, height, identifier
 	void configure(string);
@@ -50,8 +52,7 @@ public:
 
 
 	void addNewLineIdentifier(string, string);		// Add Line identifier, line label
-	void setLineIdentiferText(string, string);		// Set line text (identifier, new text)
-	
+	void setLineIdentifierText(string, string);		// Set line text (identifier, new text)
 
 	void update(touch_t){}
 };

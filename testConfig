@@ -688,7 +688,7 @@ ConnectView {
 	borderColor = ["0.43", "0.43", "0.43", "1.0"];
 	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
 	textColor = ["1.0", "1.0", "1.0", "1.0"];
-	numLines = "15";
+	numLines = "20";
 	pressDebounce = "500";
 }
 
