@@ -230,33 +230,41 @@ int main() {
 		// Mode 4 - Communication test mode
 		//////////////////////////////////////
 		if(Mode1Menu.isButtonSelected("m4")) {
+			
+			// ELM327
 			bool connected = false;
-			string status = "";
+			bool connecting = false;
+			uint64_t connectStartTime = 0;
+			int connectTimeout = 1000;
+			string ELMStatus = "Disconnected";
+			string ELMResponseString = "";
+
+
+
+			// ECU
+			bool ECUConnected = false;
+			bool ECUConnecting = false;
+			uint64_t ECUConnectStartTime = 0;
+
+			int ECUConnectTries = 0;
+			string ECUStatus = "Disconnected";
+			string ProtocolResponseString = "";
 
 			TextView ConnectLog (width/2, height/2-50, width/3-20, 360, "ConnectView");
 			TextView ConnectStats(width-width/6, height/2 - 50, width/3-20, 360, "ConnectView");
 			Button ConnectButton(width/6, height/2-50, 100, 100, "ConnectButton");
 			ConnectButton.touchEnable();
 
-
-			int currentState = 0;
-			ConnectLog.addNewLineIdentifier("currentState", "Current State: ");
-			ConnectLog.setLineIdentifierText("currentState", "---");
-			int totalMessages = 0;
-			ConnectLog.addNewLineIdentifier("totalMsgs", "Total Messages: ");
-			ConnectLog.setLineIdentifierText("totalMsgs", "---");
-			int requestMessages = 0;
-			ConnectLog.addNewLineIdentifier("reqMsgs", "Requests: ");
-			ConnectLog.setLineIdentifierText("reqMsgs", "---");
-			int responseMessages = 0;
-			ConnectLog.addNewLineIdentifier("respMsgs", "Responses: ");
-			ConnectLog.setLineIdentifierText("respMsgs", "---");
-			int validMessages = 0;
-			ConnectLog.addNewLineIdentifier("validMsgs", "Valid: ");
-			ConnectLog.setLineIdentifierText("validMsgs", "---");
-			int invalidMessages = 0;
-			ConnectLog.addNewLineIdentifier("invalidMsgs", "Invalid: ");
-			ConnectLog.setLineIdentifierText("invalidMsgs", "---");			
+			ConnectLog.addNewLineIdentifier("ELMState", "ELM State: ");
+			ConnectLog.setLineIdentifierText("ELMState", "-------------");
+			ConnectLog.addNewLineIdentifier("ELMResponse", "ELM Resp: ");
+			ConnectLog.setLineIdentifierText("ELMResponse", "-------------");
+			ConnectLog.addNewLineIdentifier("ECUState", "ECU State: ");
+			ConnectLog.setLineIdentifierText("ECUState", "-------------");
+			ConnectLog.addNewLineIdentifier("ECUTries", "ECU Tries: ");
+			ConnectLog.setLineIdentifierText("ECUState", "-------------");
+			ConnectLog.addNewLineIdentifier("Protocol", "Protocol: ");
+			ConnectLog.setLineIdentifierText("Protocol", "-------------");			
 
 			while(1) {
 				loopTime = bcm2835_st_read();
@@ -269,13 +277,67 @@ int main() {
 				TextMid(width/2, height - 100, "Connection Log", SansTypeface, 20);
 				TextMid(width-width/6, height - 100, "Connection Stats", SansTypeface, 20);
 
-				if(ConnectButton.isPressed()) {
-			
+				if(ConnectButton.isPressed() && !connecting && !connected) {
+					connecting = true;
+					ELMSerial.serialWrite("ATZ");
+					connectStartTime = loopTime;
+				}
+
+				if(connecting && (loopTime < (connectStartTime + connectTimeout*1000))) {
+					ELMStatus = "Connecting";
+					ELMResponseString = ELMSerial.serialReadUntil();
+
+					if(!ELMResponseString.empty()) {
+						ConnectLog.setLineIdentifierText("ELMResponse", ELMResponseString);
+						ELMStatus = "Connected";
+						connecting = false;
+						connected = true;
+
+						ELMSerial.serialWrite("ATSP0");
+						string resp = "";
+						while(resp.empty()) {
+							resp = ELMSerial.serialReadUntil();
+						}
+					}
+				}
+
+				if(connecting && (loopTime >= (connectStartTime + connectTimeout*1000))) {
+					connecting = false;
+					ELMStatus = "timeout";
 				}
 
 
+				if(connected && !ECUConnected && !ECUConnecting) {
+					ECUConnecting = true;
+					ELMSerial.serialWrite("0101");
+				}
+
+				if(ECUConnecting) {
+					ECUStatus = "Connecting";
+					ProtocolResponseString = ELMSerial.serialReadUntil();
+					if(!ProtocolResponseString.empty()) {
+						cout << ProtocolResponseString << endl;
+						ECUConnectTries++;
+						if(ProtocolResponseString.find("ERROR") == string::npos && ProtocolResponseString.find("UNABLE") == string::npos) {
+							ECUConnecting = false;
+							ECUConnected = true;
+							ConnectLog.setLineIdentifierText("Protocol", ProtocolResponseString);
+						}
+						else {
+							ECUConnecting = false; // try to reconnect
+							ProtocolResponseString = "";
+						}
+					}
+
+				}
+
+				ConnectLog.setLineIdentifierText("ELMState", ELMStatus);
+				ConnectLog.setLineIdentifierText("ECUState", ECUStatus);
+				ConnectLog.setLineIdentifierText("ECUTries", to_string(ECUConnectTries));
+
 				ConnectButton.updateTouch(&loopTouch);
 				ConnectButton.update();
+
 				ConnectLog.update();
 				ConnectStats.update();
 
