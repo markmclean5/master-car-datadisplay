@@ -229,6 +229,16 @@ int main() {
 		if(Mode1Menu.isButtonSelected("m4")) {
 			
 			enum ConnectionStatus { disconnected, connecting, connected };
+
+			enum ParmStatus { unknown, requested, known };
+
+			
+			string VIN 			= "";
+			ParmStatus VINStat = unknown;
+			string ELMVersion = "";
+			ParmStatus ELMVersionStat = unknown;
+			string Protocol = "";
+			ParmStatus ProtocolStat = unknown;
 			
 			// ELM327
 			ConnectionStatus ELMStatus = disconnected;
@@ -255,7 +265,10 @@ int main() {
 			ConnectionStatusView.addNewLineIdentifier("ECUTries", "ECU Tries: ");
 			ConnectionStatusView.setLineIdentifierText("ECUTries", "----");
 			ConnectionStatusView.addNewLineIdentifier("Protocol", "Protocol: ");
-			ConnectionStatusView.setLineIdentifierText("Protocol", "--------");			
+			ConnectionStatusView.setLineIdentifierText("Protocol", "--------");
+			ConnectionStatusView.addNewLineIdentifier("VIN", "VIN: ");
+			ConnectionStatusView.setLineIdentifierText("VIN", "--------");			
+			
 
 			while(1) {
 				// Loop guts
@@ -269,40 +282,69 @@ int main() {
 				TextMid(width/2, height - 100, "Connection", SansTypeface, 20);
 				TextMid(width-width/6, height - 100, "Vehicle Information", SansTypeface, 20);
 
-				// ELM327 Connection
-				if(ConnectButton.isPressed() && ELMStatus == disconnected) {
+				// Connect to the ELM327
+				if(ConnectButton.isPressed() && ELMStatus == disconnected) {										
 					ELMStatus = connecting;
 					ConnectionStatusView.setLineIdentifierText("ELMStatus", "Connecting");
 					ELMSerial.serialWrite("ATZ");
 					ELMConnectStartTime = loopTime;
 				}
 
-				if(ELMStatus == connecting && (loopTime < (ELMConnectStartTime + ELMConnectTimeout*1000))) {
+				// Connecting to the ELM327
+				if(ELMStatus == connecting && (loopTime < (ELMConnectStartTime + ELMConnectTimeout*1000))) {		
 					ELMResponseString = ELMSerial.serialReadUntil();
 					if(!ELMResponseString.empty()) {
 						ELMStatus = connected;
 						ConnectionStatusView.setLineIdentifierText("ELMStatus", "Connected");
 						
-						ELMSerial.serialWrite("ATSP0");
 						string resp = "";
+						ELMSerial.serialWrite("ATE0"); // set elm327 output for NO ECHO
+						while(resp.empty()) {
+							resp = ELMSerial.serialReadUntil();
+						}
+
+						resp = "";
+						ELMSerial.serialWrite("ATSP0");
+						
 						while(resp.empty()) {
 							resp = ELMSerial.serialReadUntil();
 						}
 					}
 				}
 
-				if(ELMStatus == connecting && (loopTime >= (ELMConnectStartTime + ELMConnectTimeout*1000))) {
+				// ELM327 connection timeout
+				if(ELMStatus == connecting && (loopTime >= (ELMConnectStartTime + ELMConnectTimeout*1000))) {		
 					ELMStatus = disconnected;
 					ConnectionStatusView.setLineIdentifierText("ELMStatus", "Timeout");
 				}
 
 
-				if(ELMStatus == connected && ECUStatus == disconnected) {
+				// Reqest ELM327 Version information
+				if(ELMStatus == connected && ELMVersionStat == unknown) {			
+					ELMSerial.serialWrite("ATI");
+					ELMVersionStat = requested;
+				}
+
+				// Requesting ELM327 Version information
+				if(ELMVersionStat == requested) {
+					ELMVersion = ELMSerial.serialReadUntil();
+					if(!ELMVersion.empty()){
+						ELMVersionStat = known; 
+						ConnectionStatusView.setLineIdentifierText("ELMVersion", ELMVersion );
+					}
+
+				}
+
+
+				// Connect to the ECU after recieving ELM Version information
+				if(ELMVersionStat == known && ECUStatus == disconnected) {
 					ECUStatus = connecting;
 					ConnectionStatusView.setLineIdentifierText("ECUStatus", "Connecting");
 					ELMSerial.serialWrite("0101");
+
 				}
 
+				// Connecting to the ECU
 				if(ECUStatus == connecting ) {
 					ECUResponseString = ELMSerial.serialReadUntil();
 					if(!ECUResponseString.empty()) {
@@ -317,6 +359,72 @@ int main() {
 							ECUStatus = disconnected;
 							ECUResponseString = "";
 						}
+					}
+
+				}
+
+				// Request current connection protocol information after connecting to the ECU
+				if(ECUStatus == connected && ProtocolStat == unknown){
+					ELMSerial.serialWrite("ATDP");
+					ProtocolStat = requested;
+				}
+
+				// Requesting protocol information
+				if(ProtocolStat == requested) {
+					Protocol = ELMSerial.serialReadUntil();
+					if(!Protocol.empty()){
+						ProtocolStat = known; 
+						ConnectionStatusView.setLineIdentifierText("Protocol", Protocol );
+					}
+
+				}
+
+
+
+				if(ProtocolStat == known && VINStat == unknown){
+					// Request VIN: OBDII PID 0902 (mode 09; cmd 02)
+					ELMSerial.serialWrite("0902");
+					VINStat = requested;
+				}
+
+
+
+				
+				if(VINStat == requested ){
+
+					// Get raw VIN data: this is a string of hexidecimal characters
+					VIN = ELMSerial.serialReadUntil(); // reads until prompt char received
+					//VIN="090249 02 01 32 4D 45 46 49 02 02 4D 37 34 57 ";
+					// this is a comment
+					string decodedVIN = "";
+
+
+
+					size_t found = 0;
+					while(found!=string::npos){
+						found = VIN.find("49 02", found); // returns pos of first occurence
+						if(found != string::npos) {
+							decodedVIN.append(VIN.substr(found+9, 12));
+							found +=12;
+						}
+							
+					}
+
+					
+
+					std::string::iterator end_pos = std::remove(decodedVIN.begin(), decodedVIN.end(), ' ');
+					decodedVIN.erase(end_pos, decodedVIN.end());
+
+
+					string finalVIN = "";
+					for(int i=0;i<decodedVIN.length();i+=2){
+						finalVIN += ( (char)strtoul(decodedVIN.substr(i, 2).c_str(), NULL, 16) );
+						//cout << "stroutl " << (char)strtoul(decodedVIN.substr(i, 2).c_str(), NULL, 16) << endl;
+					}
+					
+					if( !VIN.empty() ){
+						ConnectionStatusView.setLineIdentifierText("VIN", finalVIN);
+						VINStat = known;
 					}
 
 				}
