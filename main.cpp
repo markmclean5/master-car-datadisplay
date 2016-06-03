@@ -2,14 +2,14 @@ using namespace std;
 #include <iostream>
 #include <stdio.h>
 #include <unistd.h>
-#include "VG/openvg.h"	//
+#include "VG/openvg.h"		//
 #include "VG/vgu.h"		//
-#include "EGL/egl.h"	// EGL for pbuffers
+#include "EGL/egl.h"		// EGL for pbuffers
 #include "../openvg/fontinfo.h"	// Openvg
-#include "../openvg/shapes.h"		//
+#include "../openvg/shapes.h"	//
 #include <stdlib.h>		//
-#include "Gauge.h"	// Gauge class
-#include "DataStream.h"	// DataStream class
+#include "Gauge.h"		// Gauge class
+#include "DataStream.h"		// DataStream class
 #include <linux/input.h>
 #include <fcntl.h>
 #include <pthread.h>
