@@ -106,6 +106,7 @@ int main() {
 		if(Mode1Menu.isButtonPressed("m3")) Mode1Menu.selectButton("m3");
 		if(Mode1Menu.isButtonPressed("m4")) Mode1Menu.selectButton("m4");
 		if(Mode1Menu.isButtonPressed("m5")) Mode1Menu.selectButton("m5");
+		if(Mode1Menu.isButtonPressed("m6")) Mode1Menu.selectButton("m6");
 
 		
 
@@ -217,6 +218,13 @@ int main() {
 					Mode1Menu.selectButton("m5");
 					break;
 				}
+				if(Mode1Menu.isButtonPressed("m6")) {
+					Mode1Menu.selectButton("m6");
+					break;
+				}
+				
+				
+				
 
 				End();
 			}
@@ -451,6 +459,14 @@ int main() {
 					Mode1Menu.selectButton("m5");
 					break;
 				}
+				
+				if(Mode1Menu.isButtonPressed("m6")) {
+					Mode1Menu.selectButton("m6");
+					break;
+				}
+				
+				
+				
 				End();
 			}
 
@@ -523,10 +539,36 @@ int main() {
 					Mode1Menu.selectButton("m4");
 					break;
 				}
+				if(Mode1Menu.isButtonPressed("m6")) {
+					Mode1Menu.selectButton("m6");
+					break;
+				}
+				
+				
+				
 				End();
 			}
 
 		}
+		
+		
+		
+		//////////////////////////////////////
+		// Mode 6 - TERMINATE PROGRAM
+		//////////////////////////////////////
+		if(Mode1Menu.isButtonSelected("m6")) {
+			
+			
+			exit(EXIT_SUCCESS);
+			
+		}
+		
+		
+		
+		
+		
+		
+		
 		// Write screen buffer to screen
 		End();
 	}

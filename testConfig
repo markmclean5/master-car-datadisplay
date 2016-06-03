@@ -588,7 +588,7 @@ Mode1Menu {
 	titled = "false";
 	type = "...";
 	scrollable = "false";
-	numButtons = "5";
+	numButtons = "6";
 	buttonPadding = "7";
 	cornerRadius = "10";
 	borderWidth = "1";
@@ -624,6 +624,8 @@ Mode1Menu {
 	buttonText4 = "Monitor";
 	buttonName5 = "m5";
 	buttonText5 = "PID Support";
+	buttonName6 = "m6";
+	buttonText6 = "Exit";
 };
 
 
