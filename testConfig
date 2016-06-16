@@ -1,3 +1,49 @@
+ModeMenu {
+	titled = "false";
+	type = "...";
+	scrollable = "false";
+	numButtons = "8";
+	buttonPadding = "7";
+	cornerRadius = "10";
+	borderWidth = "1";
+	borderColor = ["0.43", "0.43", "0.43", "0.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	pressDebounce = "500";
+	isHorizontal = "true";
+	selectMode = "radio";
+	hideable = "false";
+	hideDuration = "500";
+	hideDeltaX = "0";
+	hideDeltaY = "50";
+	hideFade = "60";
+	configureButtons = "true";
+	buttonCornerRadius = "10";
+	buttonBorderWidth = "2";
+	buttonBorderColor = ["0.43", "0.43", "0.43", "1.0"];
+	buttonBackgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	buttonTextColor = ["1.0", "1.0", "1.0", "1.0"];
+	buttonSelectedBackgroundColor = ["0.43", "0.43", "0.43", "0.4"];
+	buttonSelectedBorderColor = ["1.0", "1.0", "1.0", "1.0"];
+	buttonSelectedBorderWidth = "2";
+	buttonSelectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
+	buttonName1 = "m1";
+	buttonText1 = "Dash";
+	buttonName2 = "m2";
+	buttonText2 = "Plot";
+	buttonName3 = "m3";
+	buttonText3 = "Log";
+	buttonName4 = "m4";
+	buttonText4 = "DTC";
+	buttonName5 = "m5";
+	buttonText5 = "V. Info";
+	buttonName6 = "m6";
+	buttonText6 = "Comm";
+	buttonName7 = "m7";
+	buttonText7 = "Sett";
+	buttonName8 = "m8";
+	buttonText8 = "Dev";
+};
+
 SupportedPIDMenu {
 	name = "SupportedPIDMenu";
 	type = "...";
@@ -579,55 +625,6 @@ hotBtn3 {
 	selectedBorderWidth = "3";
 	selectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
 };
-
-
-
-
-
-Mode1Menu {
-	titled = "false";
-	type = "...";
-	scrollable = "false";
-	numButtons = "6";
-	buttonPadding = "7";
-	cornerRadius = "10";
-	borderWidth = "1";
-	borderColor = ["0.43", "0.43", "0.43", "0.0"];
-	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
-	pressDebounce = "500";
-	isHorizontal = "true";
-	selectMode = "radio";
-	hideable = "false";
-	hideDuration = "500";
-	hideDeltaX = "0";
-	hideDeltaY = "50";
-	hideFade = "60";
-
-	configureButtons = "true";
-
-	buttonCornerRadius = "10";
-	buttonBorderWidth = "2";
-	buttonBorderColor = ["0.43", "0.43", "0.43", "1.0"];
-	buttonBackgroundColor = ["0.0", "0.0", "0.0", "0.6"];
-	buttonTextColor = ["1.0", "1.0", "1.0", "1.0"];
-	buttonSelectedBackgroundColor = ["0.43", "0.43", "0.43", "0.4"];
-	buttonSelectedBorderColor = ["1.0", "1.0", "1.0", "1.0"];
-	buttonSelectedBorderWidth = "2";
-	buttonSelectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
-	buttonName1 = "m1";
-	buttonText1 = "Dashboard";
-	buttonName2 = "m2";
-	buttonText2 = "Log";
-	buttonName3 = "m3";
-	buttonText3 = "DTC";
-	buttonName4 = "m4";
-	buttonText4 = "Monitor";
-	buttonName5 = "m5";
-	buttonText5 = "PID Support";
-	buttonName6 = "m6";
-	buttonText6 = "Exit";
-};
-
 
 SerialViewerMenu {
 	type = "...";

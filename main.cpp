@@ -28,7 +28,6 @@ using namespace std;
 #include <algorithm>
 
 
-
 // Loop time
 uint64_t loopTime;
 touch_t threadTouch, loopTouch;
@@ -36,11 +35,37 @@ int quitState = 0;
 
 VGImage BackgroundImage;
 
+Menu *ModeMenuPtr;
+
 // Prototypes
 void setupGraphics(int*,int*);
-
 void DisplayObjectManager(std::vector<Button>&, std::vector<Gauge>&, std::vector<PID>&, std::vector<Menu>&);
+void modeManager (touch_t*);
 
+// Mode Management enumeration definition
+enum ApplicationMode {
+						noMode,
+						dashboardMode,
+						plotMode,
+						logMode,
+						diagnosticMode,
+						informationMode,
+						interfaceMode,
+						settingsMode,
+						developmentMode
+};
+
+// Mode initialization states
+bool dashboardModeInitialized = false;
+bool plotModeInitialized = false;
+bool logModeInitialized = false;
+bool diagnosticModeInitialized = false;
+bool informationModeInitialized = false;
+bool settingsModeInitialized = false;
+bool developmentModeInitialized = false;
+
+ApplicationMode currentMode = noMode;
+ApplicationMode previousMode = noMode;
 
 //Dashboard mode vectors
 vector<Button> DASHBOARD_HotButtons;
@@ -82,15 +107,29 @@ int main() {
 	vgGetPixels(BackgroundImage, 0, 0, 0, 0, 800, 480);
 	
 
-	Menu Mode1Menu(width/2, height-30, width-20, 50, "Mode1Menu");
-	Mode1Menu.touchEnable();
-	Mode1Menu.selectButton("m1");
-	int currentMode = 0;
-
+	Menu ModeMenu(width/2, height-30, width-20, 50, "ModeMenu");
+	ModeMenuPtr = &ModeMenu;
+	ModeMenu.touchEnable();
 	Serial ELMSerial("/dev/ELM327", B38400);
 	ELMSerial.serialWrite("ATZ");
 	ELMSerial.setEndChar('>');
 	ELMSerial.setReadTimeout(5000);
+
+
+	// TODO: Move - Mode 1 temporary declarations
+	TextView SerialViewer(width/3 - width/6, height/2, width/3, 360, "SerialViewer");
+	int numPIDs = 0;
+	std::vector<PID>::iterator p = DASHBOARD_PIDs.begin();			// Set up iterator for PID vector
+	bool waitingOnData = false;
+	bool menuVisible = false;
+
+	ELMSerial.serialWrite("ATZ");
+	string serialData = "";
+	int gaugeCenterX = width/2;
+	int gaugeCenterY = height/2-30;
+	int gaugeRadius = height/2 - 80;
+
+
 
 	//////////////////////////////////////
 	// Main Execution Loop
@@ -98,143 +137,72 @@ int main() {
 	while(1) {
 		loopTouch = threadTouch;											// Get touch for loop
 		loopTime = bcm2835_st_read();										// Get time for loop
+		serialData = ELMSerial.serialReadUntil();							// Get serial data for loop
 		vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);					// Draw background image
-		Mode1Menu.update(&loopTouch);										// Update mode menu
+		ModeMenu.update(&loopTouch);										// Update mode menu
 
-		if(Mode1Menu.isButtonPressed("m1")) Mode1Menu.selectButton("m1");	// Mode menu selection
-		if(Mode1Menu.isButtonPressed("m2")) Mode1Menu.selectButton("m2");
-		if(Mode1Menu.isButtonPressed("m3")) Mode1Menu.selectButton("m3");
-		if(Mode1Menu.isButtonPressed("m4")) Mode1Menu.selectButton("m4");
-		if(Mode1Menu.isButtonPressed("m5")) Mode1Menu.selectButton("m5");
-		if(Mode1Menu.isButtonPressed("m6")) Mode1Menu.selectButton("m6");
 
-		
+		// TODO: decide if this needs touch and should update the menu - if so remove double update
+		modeManager(&loopTouch);
 
 		//////////////////////////////////////
 		// Mode 1 - DASHBOARD
 		//////////////////////////////////////
-		if(Mode1Menu.isButtonSelected("m1")) {
-			
-			TextView SerialViewer(width/3 - width/6, height/2, width/3, 360, "SerialViewer");
-			int numPIDs = 0;
-
-			// Set up iterator for PID vector
-			bool waitingOnData = false;
-			std::vector<PID>::iterator p = DASHBOARD_PIDs.begin();
-
-			bool menuVisible = false;
-
-			ELMSerial.serialWrite("ATZ");
-			string serialData = "";
-
-			int newObjectCenterX = width/2;
-			int newObjectCenterY = height/2;
 
 
-			int gaugeCenterX = width/2;
-			int gaugeCenterY = height/2-30;
-			int gaugeRadius = height/2 - 80;
+		// Dashboard mode run-time
+		if(currentMode == dashboardMode) {
 
-			while(1) {
-
-
-				if(DASHBOARD_PIDs.size() != numPIDs) {
-					numPIDs = DASHBOARD_PIDs.size();
-					p = DASHBOARD_PIDs.begin();
-				}
-				
-				loopTime = bcm2835_st_read();
-				loopTouch = threadTouch;
-				serialData = ELMSerial.serialReadUntil();
-				// Request data if: no pending request
-				if(!waitingOnData && DASHBOARD_PIDs.size()>0) {
-					ELMSerial.serialWrite((p)->getCommand());
-					waitingOnData = true;
-
-				}
-				else if(waitingOnData && !serialData.empty() && DASHBOARD_PIDs.size()>0) {
-					waitingOnData = false;
-					(p)->update(serialData, loopTime);
-					SerialViewer.addNewLine((p)->getCommand() + " - " + to_string((p)->getRawUpdateRate()) + " Hz");
-
-					if(p<DASHBOARD_PIDs.end()) p++;
-					if(p == DASHBOARD_PIDs.end()) p = DASHBOARD_PIDs.begin();
-				}
-		
-
-				vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);
-				Mode1Menu.update(&loopTouch);
-
-
-				// Update all hot buttons
-				for (std::vector<Button>::iterator it = DASHBOARD_HotButtons.begin(); it != DASHBOARD_HotButtons.end(); it++) {
-					(it)->updateTouch(&loopTouch);
-					(it)->update();
-				}
-
-				
-
-				// Update all gauges
-				for (std::vector<Gauge>::iterator it = DASHBOARD_Gauges.begin(); it != DASHBOARD_Gauges.end(); it++) {
-					(it)->updateTouch(&loopTouch);
-					string name = (it)->getPIDLink();
-					if(it->isTouched()) cout << "Gauge " << name << " is touched!" << endl;
-					//cout << "Current Gauge PID Link: " << name << endl;
-					auto CurrentGaugePID_It = find_if(DASHBOARD_PIDs.begin(), DASHBOARD_PIDs.end(), [&name](PID& obj) {return obj.getCommand().compare(name) == 0;});
-					if(CurrentGaugePID_It == DASHBOARD_PIDs.end()) {
-						cout << "PID Not found" << endl;
-						(it)->update(0,"RPM");
-					} 
-					else {			
-						(it)->update((CurrentGaugePID_It)->getRawDatum(), (CurrentGaugePID_It)->getEngUnits());
-					}
-					
-
-					
-				}
-
-				SerialViewer.update();
-				// Update all menus
-				for (std::vector<Menu>::iterator it = DASHBOARD_Menus.begin(); it != DASHBOARD_Menus.end(); it++) {
-					(it)->update(&loopTouch);
-				}
-				// Run DisplayObjectManager (current page dashboard hotbuttons, display objects, and PIDs)
-				DisplayObjectManager(DASHBOARD_HotButtons, DASHBOARD_Gauges, DASHBOARD_PIDs, DASHBOARD_Menus);
-
-
-				if(Mode1Menu.isButtonPressed("m2")) {
-					Mode1Menu.selectButton("m2");
-					break;
-				}
-				if(Mode1Menu.isButtonPressed("m3")) {
-					Mode1Menu.selectButton("m3");
-					break;
-				}
-				if(Mode1Menu.isButtonPressed("m4")) {
-					Mode1Menu.selectButton("m4");
-					break;
-				}
-				if(Mode1Menu.isButtonPressed("m5")) {
-					Mode1Menu.selectButton("m5");
-					break;
-				}
-				if(Mode1Menu.isButtonPressed("m6")) {
-					Mode1Menu.selectButton("m6");
-					break;
-				}
-				
-				
-				
-
-				End();
+			if(DASHBOARD_PIDs.size() != numPIDs) {																				// Reset PID vector beginning iterator if vector size changes
+				numPIDs = DASHBOARD_PIDs.size();
+				p = DASHBOARD_PIDs.begin();
 			}
-
+			if(!waitingOnData && DASHBOARD_PIDs.size()>0) {																		// Request data if: no pending request
+				ELMSerial.serialWrite((p)->getCommand());
+				waitingOnData = true;
+			}
+			else if(waitingOnData && !serialData.empty() && DASHBOARD_PIDs.size()>0) {											// Update the current PID if data is present
+				waitingOnData = false;
+				(p)->update(serialData, loopTime);
+				SerialViewer.addNewLine((p)->getCommand() + " - " + to_string((p)->getRawUpdateRate()) + " Hz");
+				if(p<DASHBOARD_PIDs.end()) p++;
+				if(p == DASHBOARD_PIDs.end()) p = DASHBOARD_PIDs.begin();
+			}
+			for (std::vector<Button>::iterator it = DASHBOARD_HotButtons.begin(); it != DASHBOARD_HotButtons.end(); it++) {		// Update all hot buttons
+				(it)->updateTouch(&loopTouch);
+				(it)->update();
+			}
+			for (std::vector<Gauge>::iterator it = DASHBOARD_Gauges.begin(); it != DASHBOARD_Gauges.end(); it++) {				// Update all gauges
+				(it)->updateTouch(&loopTouch);
+				string name = (it)->getPIDLink();
+				if(it->isTouched()) cout << "Gauge " << name << " is touched!" << endl;
+				auto CurrentGaugePID_It = find_if(DASHBOARD_PIDs.begin(), DASHBOARD_PIDs.end(), [&name](PID& obj) {return obj.getCommand().compare(name) == 0;});
+				
+				// TODO - Understand and fix
+				if(CurrentGaugePID_It == DASHBOARD_PIDs.end()) {
+					cout << "PID Not found" << endl;
+					(it)->update(0,"RPM");
+				} 
+				else
+					(it)->update((CurrentGaugePID_It)->getRawDatum(), (CurrentGaugePID_It)->getEngUnits());		
+			}
+			SerialViewer.update();
+			// Update all menus
+			for (std::vector<Menu>::iterator it = DASHBOARD_Menus.begin(); it != DASHBOARD_Menus.end(); it++) {
+				(it)->update(&loopTouch);
+			}
+			// Run DisplayObjectManager (current page dashboard hotbuttons, display objects, and PIDs)
+			DisplayObjectManager(DASHBOARD_HotButtons, DASHBOARD_Gauges, DASHBOARD_PIDs, DASHBOARD_Menus);				
 		}
 
+		End();				// Write picture to screen
+
+		
+		/*
 		//////////////////////////////////////
 		// Mode 4 - Communication test mode
 		//////////////////////////////////////
-		if(Mode1Menu.isButtonSelected("m4")) {
+		if(ModeMenu.isButtonSelected("m4")) {
 			
 			enum ConnectionStatus { disconnected, connecting, connected };
 
@@ -283,7 +251,7 @@ int main() {
 				loopTime = bcm2835_st_read();
 				loopTouch = threadTouch;
 				vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);
-				Mode1Menu.update(&loopTouch);
+				ModeMenu.update(&loopTouch);
 
 				// Page Graphics
 				Fill(255,255,255,1);
@@ -443,25 +411,25 @@ int main() {
 				ConnectionStatusView.update();
 				ConnectStats.update();
 
-				if(Mode1Menu.isButtonPressed("m1")) {
-					Mode1Menu.selectButton("m1");
+				if(ModeMenu.isButtonPressed("m1")) {
+					ModeMenu.selectButton("m1");
 					break;
 				}
-				if(Mode1Menu.isButtonPressed("m2")) {
-					Mode1Menu.selectButton("m2");
+				if(ModeMenu.isButtonPressed("m2")) {
+					ModeMenu.selectButton("m2");
 					break;
 				}
-				if(Mode1Menu.isButtonPressed("m3")) {
-					Mode1Menu.selectButton("m3");
+				if(ModeMenu.isButtonPressed("m3")) {
+					ModeMenu.selectButton("m3");
 					break;
 				}
-				if(Mode1Menu.isButtonPressed("m5")) {
-					Mode1Menu.selectButton("m5");
+				if(ModeMenu.isButtonPressed("m5")) {
+					ModeMenu.selectButton("m5");
 					break;
 				}
 				
-				if(Mode1Menu.isButtonPressed("m6")) {
-					Mode1Menu.selectButton("m6");
+				if(ModeMenu.isButtonPressed("m6")) {
+					ModeMenu.selectButton("m6");
 					break;
 				}
 				
@@ -474,7 +442,7 @@ int main() {
 		//////////////////////////////////////
 		// Mode 5 - PID Support Check
 		//////////////////////////////////////
-		if(Mode1Menu.isButtonSelected("m5")) {
+		if(ModeMenu.isButtonSelected("m5")) {
 			Menu PIDSupportMenu(width/6, height/2, width/3 - 20, 360, "PIDSupport");
 			TextView PIDList(width/2, height/2, width/3-20, 360, "PIDList");
 
@@ -489,7 +457,7 @@ int main() {
 				loopTime = bcm2835_st_read();
 				loopTouch = threadTouch;
 				vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);
-				Mode1Menu.update(&loopTouch);
+				ModeMenu.update(&loopTouch);
 				SupportedPIDMenu.update(&loopTouch);
 
 				PIDSupportMenu.update(&loopTouch);
@@ -523,24 +491,24 @@ int main() {
 
 
 				
-				if(Mode1Menu.isButtonPressed("m1")) {
-					Mode1Menu.selectButton("m1");
+				if(ModeMenu.isButtonPressed("m1")) {
+					ModeMenu.selectButton("m1");
 					break;
 				}
-				if(Mode1Menu.isButtonPressed("m2")) {
-					Mode1Menu.selectButton("m2");
+				if(ModeMenu.isButtonPressed("m2")) {
+					ModeMenu.selectButton("m2");
 					break;
 				}
-				if(Mode1Menu.isButtonPressed("m3")) {
-					Mode1Menu.selectButton("m3");
+				if(ModeMenu.isButtonPressed("m3")) {
+					ModeMenu.selectButton("m3");
 					break;
 				}
-				if(Mode1Menu.isButtonPressed("m4")) {
-					Mode1Menu.selectButton("m4");
+				if(ModeMenu.isButtonPressed("m4")) {
+					ModeMenu.selectButton("m4");
 					break;
 				}
-				if(Mode1Menu.isButtonPressed("m6")) {
-					Mode1Menu.selectButton("m6");
+				if(ModeMenu.isButtonPressed("m6")) {
+					ModeMenu.selectButton("m6");
 					break;
 				}
 				
@@ -556,7 +524,7 @@ int main() {
 		//////////////////////////////////////
 		// Mode 6 - TERMINATE PROGRAM
 		//////////////////////////////////////
-		if(Mode1Menu.isButtonSelected("m6")) {
+		if(ModeMenu.isButtonSelected("m6")) {
 			
 			
 			exit(EXIT_SUCCESS);
@@ -571,11 +539,39 @@ int main() {
 		
 		// Write screen buffer to screen
 		End();
+
+	*/
 	}
 }
 
 
+// Mode management function
+void modeManager (touch_t* menuTouch) {
+	// Default mode upon initialization
+	if(currentMode == noMode) {
+		currentMode = dashboardMode;
+		ModeMenuPtr->selectButton("m1");
+	}
+	ModeMenuPtr->update(menuTouch);
+	string btnPressedString = ModeMenuPtr->getPressedButtonName();
+	string prevModeString = ModeMenuPtr->getSelectedButtonName();
 
+	// Change modes
+	if(!btnPressedString.empty() && btnPressedString.compare(prevModeString) != 0) {
+		//previousMode = currentMode;
+		ModeMenuPtr->selectButton(btnPressedString);
+		if(ModeMenuPtr->isButtonSelected("m1")) currentMode = dashboardMode;
+		if(ModeMenuPtr->isButtonSelected("m2")) currentMode = plotMode;
+		if(ModeMenuPtr->isButtonSelected("m3")) currentMode = logMode;
+		if(ModeMenuPtr->isButtonSelected("m4")) currentMode = diagnosticMode;
+		if(ModeMenuPtr->isButtonSelected("m5")) currentMode = informationMode;
+		if(ModeMenuPtr->isButtonSelected("m6")) currentMode = interfaceMode;
+		if(ModeMenuPtr->isButtonSelected("m7")) currentMode = settingsMode;
+		if(ModeMenuPtr->isButtonSelected("m8")) currentMode = developmentMode;
+	}
+	else previousMode = currentMode;
+
+}
 
 void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& Gauges, std::vector<PID>& PIDs, std::vector<Menu>& Menus){
 
