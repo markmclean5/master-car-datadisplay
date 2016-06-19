@@ -57,8 +57,8 @@ void TextView::configure(string ident) {
 			lineColors[i] = new float[4];
 			lineColors[i] = textColor;
 		}
-		fontSize = rectHeight/(numLines+2);
-		textPadding = (2*(rectHeight/numLines))/(numLines);
+		fontSize = rectHeight/(numLines+1.5);
+		textPadding = (rectHeight - (fontSize*numLines)) / (numLines + 1);
 		parseColor(cfg, textViewName, borderColor, "borderColor");
 		borderColorAlpha = borderColor[3];
 		parseColor(cfg, textViewName, backgroundColor, "backgroundColor");
@@ -158,13 +158,13 @@ void TextView::updateLine(int line, string data) {
 void TextView::addNewLineIdentifier(string newIdentifier, string newIdentifierText){		// Add Line identifier, line label
 	lineIdentifiers[currentLine] = newIdentifier;
 	lineLabels[currentLine] = newIdentifierText;
-	if(currentLine <= numLines-1)
+	if(currentLine < numLines)
 		currentLine++;
 }
 
 void TextView::setLineIdentifierText(string lineIdentifier, string newText){				// Set line text (identifier, new text)
 	int matchingLine = -1;
-	for(int l=0; l<numLines-1; l++) {
+	for(int l=0; l<numLines; l++) {
 		if(lineIdentifiers[l].compare(lineIdentifier) == 0)
 			matchingLine = l;
 	}

@@ -3,6 +3,7 @@ ModeMenu {
 	type = "...";
 	scrollable = "false";
 	numButtons = "8";
+	totalItems = "8";
 	buttonPadding = "7";
 	cornerRadius = "10";
 	borderWidth = "1";
@@ -43,6 +44,61 @@ ModeMenu {
 	buttonName8 = "m8";
 	buttonText8 = "Dev";
 };
+
+FramerateButton {
+	name = "FramerateButton";
+	cornerRadius = "20";
+	borderWidth = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "B";
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	defaultText = "Hz";
+	enableValue = "true";
+	valueAlign = "T";
+	valueColor = ["1.0", "1.0", "1.0", "1.0"];
+	valueRefreshRate = "5";
+	valueDecPlaces = "1";
+	pressDebounce = "500";
+	selectable = "false";
+};
+
+PIDCountButton {
+	name = "PIDCountButton";
+	cornerRadius = "20";
+	borderWidth = "1";
+	borderColor = ["0.43", "0.43", "0.43", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "false";
+	enableValue = "true";
+	valueAlign = "C";
+	valueColor = ["1.0", "1.0", "1.0", "1.0"];
+	valueRefreshRate = "5";
+	valueDecPlaces = "0";
+	pressDebounce = "500";
+	selectable = "false";
+};
+
+PIDUpdateRateButton {
+	name = "PIDUpdateRateButton";
+	cornerRadius = "20";
+	borderWidth = "1";
+	borderColor = ["0.43", "0.43", "0.43", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "B";
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	defaultText = "Hz";
+	enableValue = "true";
+	valueAlign = "T";
+	valueColor = ["1.0", "1.0", "1.0", "1.0"];
+	valueRefreshRate = "5";
+	valueDecPlaces = "0";
+	pressDebounce = "500";
+	selectable = "false";
+};
+
 
 SupportedPIDMenu {
 	name = "SupportedPIDMenu";
@@ -87,12 +143,12 @@ HOTBUTTON_GroupMenu {
 	type = "...";
 	titled = "true";
 	titlePercentHeight = "9";
-	titleText = "Group";
+	titleText = "PID Set";
 	titleFontSize = "20";
 	titleColor = ["1.0", "0.0", "0.0", "1.0"];
 	scrollable = "false";
-	numButtons = "5";
-	totalItems = "5";
+	numButtons = "2";
+	totalItems = "2";
 	buttonPadding = "7";
 	cornerRadius = "10";
 	borderWidth = "1";
@@ -113,15 +169,9 @@ HOTBUTTON_GroupMenu {
 	buttonSelectedBorderWidth = "2";
 	buttonSelectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
 	buttonName1 = "g1";
-	buttonText1 = "Group 1";
+	buttonText1 = "Standard";
 	buttonName2 = "g2";
-	buttonText2 = "Group 2";
-	buttonName3 = "g3";
-	buttonText3 = "Group 3";
-	buttonName4 = "g4";
-	buttonText4 = "Group 4";
-	buttonName5 = "g5";
-	buttonText5 = "Group 5";
+	buttonText2 = "Extended";
 };
 
 HOTBUTTON_DisplayObjectMenu {
@@ -176,7 +226,7 @@ g1 {
 	scrollable = "true";
 	totalItems = "64";
 	scrollItems = "8";
-	scrollButtonPercentHeight = "15";
+	scrollButtonPercentHeight = "10";
 	prevButton = "true";
 	prevButtonText = "PREV";
 	nextButton = "true";
@@ -343,7 +393,7 @@ g2 {
 	type = "ParameterMenu";
 	titled = "true";
 	titlePercentHeight = "9";
-	titleText = "Group 2";
+	titleText = "Parameters";
 	titleFontSize = "20";
 	titleColor = ["1.0", "0.0", "0.0", "1.0"];
 	scrollable = "false";
@@ -367,141 +417,17 @@ g2 {
 	buttonSelectedBorderColor = ["1.0", "1.0", "1.0", "1.0"];
 	buttonSelectedBorderWidth = "2";
 	buttonSelectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
-	buttonName1 = "g1";
-	buttonText1 = "Group 2 Item 1";
-	buttonName2 = "g2";
-	buttonText2 = "Group 2 Item 2";
-	buttonName3 = "g3";
-	buttonText3 = "Group 2 Item 3";
-	buttonName4 = "g4";
-	buttonText4 = "Group 2 Item 4";
-	buttonName5 = "m7";
-	buttonText5 = "Group 2 Item 5";
+	buttonName1 = "e1";
+	buttonText1 = "Extended PID 1";
+	buttonName2 = "e2";
+	buttonText2 = "Extended PID 2";
+	buttonName3 = "e3";
+	buttonText3 = "Extended PID 3";
+	buttonName4 = "e4";
+	buttonText4 = "Extended PID 4";
+	buttonName5 = "e5";
+	buttonText5 = "Extended PID 5";
 };
-g3 {
-	name = "g3";
-	type = "ParameterMenu";
-	titled = "true";
-	titlePercentHeight = "9";
-	titleText = "Group 3";
-	titleFontSize = "20";
-	titleColor = ["1.0", "0.0", "0.0", "1.0"];
-	scrollable = "false";
-	numButtons = "5";
-	buttonPadding = "7";
-	cornerRadius = "10";
-	borderWidth = "1";
-	borderColor = ["0.43", "0.43", "0.43", "0.0"];
-	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
-	pressDebounce = "500";
-	isHorizontal = "false";
-	selectMode = "radio";
-	hideable = "false";
-	configureButtons = "true";
-	buttonCornerRadius = "10";
-	buttonBorderWidth = "2";
-	buttonBorderColor = ["0.43", "0.43", "0.43", "1.0"];
-	buttonBackgroundColor = ["0.0", "0.0", "0.0", "0.6"];
-	buttonTextColor = ["1.0", "1.0", "1.0", "1.0"];
-	buttonSelectedBackgroundColor = ["0.43", "0.43", "0.43", "0.4"];
-	buttonSelectedBorderColor = ["1.0", "1.0", "1.0", "1.0"];
-	buttonSelectedBorderWidth = "2";
-	buttonSelectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
-	buttonName1 = "g1";
-	buttonText1 = "Group 3 Item 1";
-	buttonName2 = "g2";
-	buttonText2 = "Group 3 Item 2";
-	buttonName3 = "g3";
-	buttonText3 = "Group 3 Item 3";
-	buttonName4 = "g4";
-	buttonText4 = "Group 3 Item 4";
-	buttonName5 = "m7";
-	buttonText5 = "Group 3 Item 5";
-};
-g4 {
-	name = "g4";
-	type = "ParameterMenu";
-	titled = "true";
-	titlePercentHeight = "9";
-	titleText = "Group 4";
-	titleFontSize = "20";
-	titleColor = ["1.0", "0.0", "0.0", "1.0"];
-	scrollable = "false";
-	numButtons = "5";
-	buttonPadding = "7";
-	cornerRadius = "10";
-	borderWidth = "1";
-	borderColor = ["0.43", "0.43", "0.43", "0.0"];
-	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
-	pressDebounce = "500";
-	isHorizontal = "false";
-	selectMode = "radio";
-	hideable = "false";
-	configureButtons = "true";
-	buttonCornerRadius = "10";
-	buttonBorderWidth = "2";
-	buttonBorderColor = ["0.43", "0.43", "0.43", "1.0"];
-	buttonBackgroundColor = ["0.0", "0.0", "0.0", "0.6"];
-	buttonTextColor = ["1.0", "1.0", "1.0", "1.0"];
-	buttonSelectedBackgroundColor = ["0.43", "0.43", "0.43", "0.4"];
-	buttonSelectedBorderColor = ["1.0", "1.0", "1.0", "1.0"];
-	buttonSelectedBorderWidth = "2";
-	buttonSelectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
-	buttonName1 = "g1";
-	buttonText1 = "Group 4 Item 1";
-	buttonName2 = "g2";
-	buttonText2 = "Group 4 Item 2";
-	buttonName3 = "g3";
-	buttonText3 = "Group 4 Item 3";
-	buttonName4 = "g4";
-	buttonText4 = "Group 4 Item 4";
-	buttonName5 = "m7";
-	buttonText5 = "Group 4 Item 5";
-};
-g5 {
-	name = "g5";
-	type = "ParameterMenu";
-	titled = "true";
-	titlePercentHeight = "9";
-	titleText = "Group 5";
-	titleFontSize = "20";
-	titleColor = ["1.0", "0.0", "0.0", "1.0"];
-	scrollable = "false";
-	numButtons = "5";
-	buttonPadding = "7";
-	cornerRadius = "10";
-	borderWidth = "1";
-	borderColor = ["0.43", "0.43", "0.43", "0.0"];
-	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
-	pressDebounce = "500";
-	isHorizontal = "false";
-	selectMode = "radio";
-	hideable = "false";
-	configureButtons = "true";
-	buttonCornerRadius = "10";
-	buttonBorderWidth = "2";
-	buttonBorderColor = ["0.43", "0.43", "0.43", "1.0"];
-	buttonBackgroundColor = ["0.0", "0.0", "0.0", "0.6"];
-	buttonTextColor = ["1.0", "1.0", "1.0", "1.0"];
-	buttonSelectedBackgroundColor = ["0.43", "0.43", "0.43", "0.4"];
-	buttonSelectedBorderColor = ["1.0", "1.0", "1.0", "1.0"];
-	buttonSelectedBorderWidth = "2";
-	buttonSelectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
-	buttonName1 = "g1";
-	buttonText1 = "Group 5 Item 1";
-	buttonName2 = "g2";
-	buttonText2 = "Group 5 Item 2";
-	buttonName3 = "g3";
-	buttonText3 = "Group 5 Item 3";
-	buttonName4 = "g4";
-	buttonText4 = "Group 5 Item 4";
-	buttonName5 = "m7";
-	buttonText5 = "Group 5 Item 5";
-};
-
-
-
-
 
 PIDList {
 	cornerRadius = "20";
@@ -559,13 +485,13 @@ PIDSupport {
 
 
 
-SerialViewer {
+StatusView {
 	cornerRadius = "10";
-	borderWidth = "2";
+	borderWidth = "1";
 	borderColor = ["0.43", "0.43", "0.43", "1.0"];
 	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
 	textColor = ["1.0", "1.0", "1.0", "1.0"];
-	numLines = "25";
+	numLines = "1";
 	pressDebounce = "500";
 }
 

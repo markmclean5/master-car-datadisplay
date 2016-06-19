@@ -117,7 +117,33 @@ int main() {
 
 
 	// TODO: Move - Mode 1 temporary declarations
-	TextView SerialViewer(width/3 - width/6, height/2, width/3, 360, "SerialViewer");
+
+	// Left-hand side development status display objects
+	TextView ApplicationStatusView(width/3 - width/6, height-75, width/3, 30, "StatusView");
+	ApplicationStatusView.addNewLineIdentifier("AppStatus", "Application: ");
+	ApplicationStatusView.setLineIdentifierText("AppStatus", "Initializing");
+	TextView CommStatusView(width/3 - width/6, height-110, width/3, 30, "StatusView");
+	CommStatusView.addNewLineIdentifier("CommStatus", "Comm: ");
+	CommStatusView.setLineIdentifierText("CommStatus", "Disconnected");
+	TextView PIDSupportView(width/3 - width/6, height-145, width/3, 30, "StatusView");
+	PIDSupportView.addNewLineIdentifier("SupportedPIDs", "");
+	PIDSupportView.setLineIdentifierText("SupportedPIDs", "--- Supported PIDs");
+	int dispButtonWidth = ((width/3) - 30) / 3;
+	int dispButtonHeight = 35;
+	int displayPIDCount = 0;
+	int plotPIDCount = 0;
+	int logPIDCount = 0;
+	Button DisplayPIDCountButton(10 + 0.5 * dispButtonWidth, height - 195, dispButtonWidth, dispButtonHeight, "PIDCountButton");
+	Button PlotPIDCountButton(20 + 1.5 * dispButtonWidth, height - 195, dispButtonWidth, dispButtonHeight, "PIDCountButton");
+	Button LogPIDCountButton(30 + 2.5 * dispButtonWidth, height - 195, dispButtonWidth, dispButtonHeight, "PIDCountButton");
+	
+	Button DisplayPIDUpdateRateButton(10 + 0.5 * dispButtonWidth, height - 235, dispButtonWidth, dispButtonHeight, "PIDUpdateRateButton");
+	Button PlotPIDUpdateRateButton(20 + 1.5 * dispButtonWidth, height - 235, dispButtonWidth, dispButtonHeight, "PIDUpdateRateButton");
+	Button LogPIDUpdateRateButton(30 + 2.5 * dispButtonWidth, height - 235, dispButtonWidth, dispButtonHeight, "PIDUpdateRateButton");
+
+	
+	// Mode 1 ------
+
 	int numPIDs = 0;
 	std::vector<PID>::iterator p = DASHBOARD_PIDs.begin();			// Set up iterator for PID vector
 	bool waitingOnData = false;
@@ -128,6 +154,11 @@ int main() {
 	int gaugeCenterX = width/2;
 	int gaugeCenterY = height/2-30;
 	int gaugeRadius = height/2 - 80;
+
+	
+	Button FramerateButton(25, 18, 50, 35, "FramerateButton");
+
+	uint64_t lastLoopTime = 0;
 
 
 
@@ -141,6 +172,41 @@ int main() {
 		vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);					// Draw background image
 		ModeMenu.update(&loopTouch);										// Update mode menu
 
+
+
+
+		if(currentMode == developmentMode) {
+			// Left-hand side development status display
+			CommStatusView.update();
+			ApplicationStatusView.update();
+			PIDSupportView.update();
+
+			Fill(255, 255, 255, 1.);
+			TextMid (10 + 0.5 * dispButtonWidth, height - 175, "Disp.", SansTypeface, 12);
+			TextMid (20 + 1.5 * dispButtonWidth, height - 175, "Plot", SansTypeface, 12);
+			TextMid (30 + 2.5 * dispButtonWidth, height - 175, "Log", SansTypeface, 12);
+
+			DisplayPIDCountButton.update();
+			PlotPIDCountButton.update();
+			LogPIDCountButton.update();	
+
+			DisplayPIDCountButton.setValue(DASHBOARD_PIDs.size());
+			PlotPIDCountButton.setValue(plotPIDCount);
+			LogPIDCountButton.setValue(logPIDCount);
+
+			DisplayPIDUpdateRateButton.update();
+			PlotPIDUpdateRateButton.update();
+			LogPIDUpdateRateButton.update();
+		}
+
+		
+		
+		float refreshRate = 1000000/(loopTime - lastLoopTime);
+		lastLoopTime = loopTime;
+		FramerateButton.setValue(refreshRate);
+		FramerateButton.update();
+
+		
 
 		// TODO: decide if this needs touch and should update the menu - if so remove double update
 		modeManager(&loopTouch);
@@ -164,7 +230,7 @@ int main() {
 			else if(waitingOnData && !serialData.empty() && DASHBOARD_PIDs.size()>0) {											// Update the current PID if data is present
 				waitingOnData = false;
 				(p)->update(serialData, loopTime);
-				SerialViewer.addNewLine((p)->getCommand() + " - " + to_string((p)->getRawUpdateRate()) + " Hz");
+				//SerialViewer.addNewLine((p)->getCommand() + " - " + to_string((p)->getRawUpdateRate()) + " Hz");
 				if(p<DASHBOARD_PIDs.end()) p++;
 				if(p == DASHBOARD_PIDs.end()) p = DASHBOARD_PIDs.begin();
 			}
@@ -186,7 +252,7 @@ int main() {
 				else
 					(it)->update((CurrentGaugePID_It)->getRawDatum(), (CurrentGaugePID_It)->getEngUnits());		
 			}
-			SerialViewer.update();
+			//SerialViewer.update();
 			// Update all menus
 			for (std::vector<Menu>::iterator it = DASHBOARD_Menus.begin(); it != DASHBOARD_Menus.end(); it++) {
 				(it)->update(&loopTouch);

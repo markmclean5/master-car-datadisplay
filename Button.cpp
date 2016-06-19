@@ -18,7 +18,7 @@
 using namespace std;
 using namespace config4cpp;
 
-string valueString = "";
+
 
 /* Button Constructor: load size and location from config file*/
 Button::Button(string identifier) {

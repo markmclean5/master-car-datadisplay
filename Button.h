@@ -16,6 +16,7 @@ private:
 	bool bufferSaved;
 
 	string buttonIdentifier;				// Button identifier string
+	string valueString;
 	string buttonName;
 	string name;
 	bool givenSizeAndLocation;
