@@ -42,7 +42,7 @@ void setupGraphics(int*,int*);
 void DisplayObjectManager(std::vector<Button>&, std::vector<Gauge>&, std::vector<PID>&, std::vector<Menu>&);
 void modeManager (touch_t*);
 
-// Mode Management enumeration definition
+// Mode Management enumeration definition and application mode definitions
 enum ApplicationMode {
 						noMode,
 						dashboardMode,
@@ -55,24 +55,37 @@ enum ApplicationMode {
 						developmentMode
 };
 
-// Mode initialization states
-bool dashboardModeInitialized = false;
-bool plotModeInitialized = false;
-bool logModeInitialized = false;
-bool diagnosticModeInitialized = false;
-bool informationModeInitialized = false;
-bool settingsModeInitialized = false;
-bool developmentModeInitialized = false;
+ApplicationMode currentMode = noMode;			// Current application mode
+ApplicationMode previousMode = noMode;			// Previous application mode, for mode change detection
 
-ApplicationMode currentMode = noMode;
-ApplicationMode previousMode = noMode;
+// PID Vector management enumeration definition
+enum PIDVectorState {
+						inactive,		// Active PID updates not required
+						modified,		// Reset state when vector contents modified
+						active,			// Active, not waiting on response from ELM
+						busy,			// Waiting for response from ELM
+						complete		// All PIDs in vector have been updated
+};
 
-//Dashboard mode vectors
+//Dashboard mode vectors and states
 vector<Button> DASHBOARD_HotButtons;
 vector<Gauge> DASHBOARD_Gauges;
-vector<PID> DASHBOARD_PIDs;
 vector<Menu> DASHBOARD_Menus;
+vector<PID> DASHBOARD_PIDs;
+std::vector<PID>::iterator DASHBOARD_CurrentPID = DASHBOARD_PIDs.begin();	// Set up iterator for Dashboard Mode PID vector
+PIDVectorState DASHBOARD_PIDVectorState = inactive;
 
+//Plot mode vector and states
+vector<PID> PLOT_PIDs;
+std::vector<PID>::iterator PLOT_CurrentPID = PLOT_PIDs.begin();				// Set up iterator for Plot Mode PID vector
+PIDVectorState PLOT_PIDVectorState = inactive;
+
+//Log mode vector and states
+vector<PID> LOG_PIDs;
+std::vector<PID>::iterator LOG_CurrentPID = LOG_PIDs.begin();				// Set up iterator for Log Mode PID vector
+PIDVectorState LOG_PIDVectorState = inactive;
+
+// TODO: Figure out a better way to deal with colors
 // Color definitions (float r, float g, float b, float alpha)
 float black[] = {0,0,0,1};
 float green[] = {0,1,0,1};
@@ -86,38 +99,44 @@ float receivecolor[] = {0.4, 0.69, 1.0, 1.0};
 
 // main()
 int main() {
-	int width, height;					// display width & height
-	setupGraphics(&width, &height);		// Initialize display
+	int width, height;						// display width & height
+	setupGraphics(&width, &height);			// Initialize display
 
-	if (!bcm2835_init())
+	if (!bcm2835_init())					// Initialize bcm2835 library
 		return 1;
-	if (touchinit(width, height) != 0) {
-		fprintf(stderr, "Unable to initialize the mouse\n");
+	if (touchinit(width, height) != 0) {	// Initialize touchscreen
+		fprintf(stderr, "Unable to initialize touchscreen\n");
 		exit(1);
 	}
 
+	// Vector size reservations, based on expected application usage, to minimize resize operations
 	DASHBOARD_Menus.reserve(4);
 	DASHBOARD_HotButtons.reserve(4);
 	DASHBOARD_PIDs.reserve(4);
 	DASHBOARD_Gauges.reserve(4);
 
-	// Draw background
+	// Draw background wallpaper from JPEG, save as VGImage for efficient re-draw
 	Image(0, 0, 800, 480, "/home/pi/master-car-datadisplay/wallpaper.jpg");
 	BackgroundImage = vgCreateImage(VG_sABGR_8888, 800, 480, VG_IMAGE_QUALITY_BETTER);
 	vgGetPixels(BackgroundImage, 0, 0, 0, 0, 800, 480);
 	
 
+	// Mode Menu: managed by mode menu manager
 	Menu ModeMenu(width/2, height-30, width-20, 50, "ModeMenu");
 	ModeMenuPtr = &ModeMenu;
 	ModeMenu.touchEnable();
+
+	// Serial object for ELM327 interface
 	Serial ELMSerial("/dev/ELM327", B38400);
-	ELMSerial.serialWrite("ATZ");
 	ELMSerial.setEndChar('>');
-	ELMSerial.setReadTimeout(5000);
+	ELMSerial.setReadTimeout(5000);		// TODO: Investigate me
 
+	// Iniial reset of ELM327
+	ELMSerial.serialWrite("ATZ");
+	ELMSerial.serialReadUntil();
+	
 
-	// TODO: Move - Mode 1 temporary declarations
-
+	// TODO: Move to better location
 	// Left-hand side development status display objects
 	TextView ApplicationStatusView(width/3 - width/6, height-75, width/3, 30, "StatusView");
 	ApplicationStatusView.addNewLineIdentifier("AppStatus", "Application: ");
@@ -136,18 +155,14 @@ int main() {
 	Button DisplayPIDCountButton(10 + 0.5 * dispButtonWidth, height - 195, dispButtonWidth, dispButtonHeight, "PIDCountButton");
 	Button PlotPIDCountButton(20 + 1.5 * dispButtonWidth, height - 195, dispButtonWidth, dispButtonHeight, "PIDCountButton");
 	Button LogPIDCountButton(30 + 2.5 * dispButtonWidth, height - 195, dispButtonWidth, dispButtonHeight, "PIDCountButton");
-	
 	Button DisplayPIDUpdateRateButton(10 + 0.5 * dispButtonWidth, height - 235, dispButtonWidth, dispButtonHeight, "PIDUpdateRateButton");
 	Button PlotPIDUpdateRateButton(20 + 1.5 * dispButtonWidth, height - 235, dispButtonWidth, dispButtonHeight, "PIDUpdateRateButton");
 	Button LogPIDUpdateRateButton(30 + 2.5 * dispButtonWidth, height - 235, dispButtonWidth, dispButtonHeight, "PIDUpdateRateButton");
 
 	
-	// Mode 1 ------
-
+	// Dashboard Mode items
 	int numPIDs = 0;
-	std::vector<PID>::iterator p = DASHBOARD_PIDs.begin();			// Set up iterator for PID vector
 	bool waitingOnData = false;
-	bool menuVisible = false;
 
 	ELMSerial.serialWrite("ATZ");
 	string serialData = "";
@@ -221,18 +236,18 @@ int main() {
 
 			if(DASHBOARD_PIDs.size() != numPIDs) {																				// Reset PID vector beginning iterator if vector size changes
 				numPIDs = DASHBOARD_PIDs.size();
-				p = DASHBOARD_PIDs.begin();
+				DASHBOARD_CurrentPID = DASHBOARD_PIDs.begin();
 			}
 			if(!waitingOnData && DASHBOARD_PIDs.size()>0) {																		// Request data if: no pending request
-				ELMSerial.serialWrite((p)->getCommand());
+				ELMSerial.serialWrite((DASHBOARD_CurrentPID)->getCommand());
 				waitingOnData = true;
 			}
 			else if(waitingOnData && !serialData.empty() && DASHBOARD_PIDs.size()>0) {											// Update the current PID if data is present
 				waitingOnData = false;
-				(p)->update(serialData, loopTime);
-				//SerialViewer.addNewLine((p)->getCommand() + " - " + to_string((p)->getRawUpdateRate()) + " Hz");
-				if(p<DASHBOARD_PIDs.end()) p++;
-				if(p == DASHBOARD_PIDs.end()) p = DASHBOARD_PIDs.begin();
+				(DASHBOARD_CurrentPID)->update(serialData, loopTime);
+				//SerialViewer.addNewLine((DASHBOARD_CurrentPID)->getCommand() + " - " + to_string((DASHBOARD_CurrentPID)->getRawUpdateRate()) + " Hz");
+				if(DASHBOARD_CurrentPID<DASHBOARD_PIDs.end())DASHBOARD_CurrentPID++;
+				if(DASHBOARD_CurrentPID == DASHBOARD_PIDs.end())DASHBOARD_CurrentPID = DASHBOARD_PIDs.begin();
 			}
 			for (std::vector<Button>::iterator it = DASHBOARD_HotButtons.begin(); it != DASHBOARD_HotButtons.end(); it++) {		// Update all hot buttons
 				(it)->updateTouch(&loopTouch);
@@ -609,6 +624,18 @@ int main() {
 	*/
 	}
 }
+
+
+// PID Vector managment function: Handles update of PID vectors based on current application mode
+void PIDVectorManager () {
+	if(currentMode == dashboardMode) {
+
+	}
+
+}
+
+
+
 
 
 // Mode management function
