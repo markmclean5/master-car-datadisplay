@@ -2,8 +2,8 @@ ModeMenu {
 	titled = "false";
 	type = "...";
 	scrollable = "false";
-	numButtons = "8";
-	totalItems = "8";
+	numButtons = "9";
+	totalItems = "9";
 	buttonPadding = "7";
 	cornerRadius = "10";
 	borderWidth = "1";
@@ -27,22 +27,25 @@ ModeMenu {
 	buttonSelectedBorderColor = ["1.0", "1.0", "1.0", "1.0"];
 	buttonSelectedBorderWidth = "2";
 	buttonSelectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
-	buttonName1 = "m1";
+	buttonName1 = "dashboard";
 	buttonText1 = "Dash";
-	buttonName2 = "m2";
+	buttonName2 = "plot";
 	buttonText2 = "Plot";
-	buttonName3 = "m3";
+	buttonName3 = "log";
 	buttonText3 = "Log";
-	buttonName4 = "m4";
+	buttonName4 = "diagnostic";
 	buttonText4 = "DTC";
-	buttonName5 = "m5";
+	buttonName5 = "information";
 	buttonText5 = "V. Info";
-	buttonName6 = "m6";
+	buttonName6 = "interface";
 	buttonText6 = "Comm";
-	buttonName7 = "m7";
+	buttonName7 = "settings";
 	buttonText7 = "Sett";
-	buttonName8 = "m8";
+	buttonName8 = "development";
 	buttonText8 = "Dev";
+	buttonName9 = "exit";
+	buttonText9 = "X";
+
 };
 
 FramerateButton {

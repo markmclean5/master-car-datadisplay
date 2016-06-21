@@ -61,9 +61,9 @@ ApplicationMode previousMode = noMode;			// Previous application mode, for mode 
 // PID Vector management enumeration definition
 enum PIDVectorState {
 						inactive,		// Active PID updates not required
-						modified,		// Reset state when vector contents modified
 						active,			// Active, not waiting on response from ELM
 						busy,			// Waiting for response from ELM
+						modified,		// Reset state when vector contents modified
 						complete		// All PIDs in vector have been updated
 };
 
@@ -187,6 +187,15 @@ int main() {
 		vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);					// Draw background image
 		ModeMenu.update(&loopTouch);										// Update mode menu
 
+		// TODO: decide if this needs touch and should update the menu - if so remove double update
+		modeManager(&loopTouch);
+
+		
+		// Framerate button - need to enable / disable
+		float refreshRate = 1000000/(loopTime - lastLoopTime);
+		lastLoopTime = loopTime;
+		FramerateButton.setValue(refreshRate);
+		FramerateButton.update();
 
 
 
@@ -216,21 +225,9 @@ int main() {
 
 		
 		
-		float refreshRate = 1000000/(loopTime - lastLoopTime);
-		lastLoopTime = loopTime;
-		FramerateButton.setValue(refreshRate);
-		FramerateButton.update();
-
-		
-
-		// TODO: decide if this needs touch and should update the menu - if so remove double update
-		modeManager(&loopTouch);
-
 		//////////////////////////////////////
 		// Mode 1 - DASHBOARD
 		//////////////////////////////////////
-
-
 		// Dashboard mode run-time
 		if(currentMode == dashboardMode) {
 
@@ -599,25 +596,7 @@ int main() {
 			}
 
 		}
-		
-		
-		
-		//////////////////////////////////////
-		// Mode 6 - TERMINATE PROGRAM
-		//////////////////////////////////////
-		if(ModeMenu.isButtonSelected("m6")) {
 			
-			
-			exit(EXIT_SUCCESS);
-			
-		}
-		
-		
-		
-		
-		
-		
-		
 		// Write screen buffer to screen
 		End();
 
@@ -643,7 +622,7 @@ void modeManager (touch_t* menuTouch) {
 	// Default mode upon initialization
 	if(currentMode == noMode) {
 		currentMode = dashboardMode;
-		ModeMenuPtr->selectButton("m1");
+		ModeMenuPtr->selectButton("dashboard");
 	}
 	ModeMenuPtr->update(menuTouch);
 	string btnPressedString = ModeMenuPtr->getPressedButtonName();
@@ -653,14 +632,17 @@ void modeManager (touch_t* menuTouch) {
 	if(!btnPressedString.empty() && btnPressedString.compare(prevModeString) != 0) {
 		//previousMode = currentMode;
 		ModeMenuPtr->selectButton(btnPressedString);
-		if(ModeMenuPtr->isButtonSelected("m1")) currentMode = dashboardMode;
-		if(ModeMenuPtr->isButtonSelected("m2")) currentMode = plotMode;
-		if(ModeMenuPtr->isButtonSelected("m3")) currentMode = logMode;
-		if(ModeMenuPtr->isButtonSelected("m4")) currentMode = diagnosticMode;
-		if(ModeMenuPtr->isButtonSelected("m5")) currentMode = informationMode;
-		if(ModeMenuPtr->isButtonSelected("m6")) currentMode = interfaceMode;
-		if(ModeMenuPtr->isButtonSelected("m7")) currentMode = settingsMode;
-		if(ModeMenuPtr->isButtonSelected("m8")) currentMode = developmentMode;
+		if(ModeMenuPtr->isButtonSelected("dashboard")) currentMode = dashboardMode;
+		if(ModeMenuPtr->isButtonSelected("plot")) currentMode = plotMode;
+		if(ModeMenuPtr->isButtonSelected("log")) currentMode = logMode;
+		if(ModeMenuPtr->isButtonSelected("diagnostic")) currentMode = diagnosticMode;
+		if(ModeMenuPtr->isButtonSelected("information")) currentMode = informationMode;
+		if(ModeMenuPtr->isButtonSelected("interface")) currentMode = interfaceMode;
+		if(ModeMenuPtr->isButtonSelected("settings")) currentMode = settingsMode;
+		if(ModeMenuPtr->isButtonSelected("development")) currentMode = developmentMode;
+		if(ModeMenuPtr->isButtonSelected("exit")) {
+			exit(EXIT_SUCCESS);
+		}
 	}
 	else previousMode = currentMode;
 
