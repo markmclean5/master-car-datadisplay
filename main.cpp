@@ -36,11 +36,14 @@ int quitState = 0;
 VGImage BackgroundImage;
 
 Menu *ModeMenuPtr;
+Serial *ELMSerialPtr;
 
 // Prototypes
 void setupGraphics(int*,int*);
 void DisplayObjectManager(std::vector<Button>&, std::vector<Gauge>&, std::vector<PID>&, std::vector<Menu>&);
 void modeManager (touch_t*);
+void PIDVectorManager(void);
+
 
 // Mode Management enumeration definition and application mode definitions
 enum ApplicationMode {
@@ -63,7 +66,6 @@ enum PIDVectorState {
 						inactive,		// Active PID updates not required
 						active,			// Active, not waiting on response from ELM
 						busy,			// Waiting for response from ELM
-						modified,		// Reset state when vector contents modified
 						complete		// All PIDs in vector have been updated
 };
 
@@ -71,19 +73,15 @@ enum PIDVectorState {
 vector<Button> DASHBOARD_HotButtons;
 vector<Gauge> DASHBOARD_Gauges;
 vector<Menu> DASHBOARD_Menus;
-vector<PID> DASHBOARD_PIDs;
-std::vector<PID>::iterator DASHBOARD_CurrentPID = DASHBOARD_PIDs.begin();	// Set up iterator for Dashboard Mode PID vector
-PIDVectorState DASHBOARD_PIDVectorState = inactive;
 
-//Plot mode vector and states
-vector<PID> PLOT_PIDs;
-std::vector<PID>::iterator PLOT_CurrentPID = PLOT_PIDs.begin();				// Set up iterator for Plot Mode PID vector
-PIDVectorState PLOT_PIDVectorState = inactive;
 
-//Log mode vector and states
-vector<PID> LOG_PIDs;
-std::vector<PID>::iterator LOG_CurrentPID = LOG_PIDs.begin();				// Set up iterator for Log Mode PID vector
-PIDVectorState LOG_PIDVectorState = inactive;
+
+// Everything to do with PIDs
+vector<PID> PIDs;										// PID vector
+std::vector<PID>::iterator CurrentPID = PIDs.begin();	// Set up iterator for PID vector
+PIDVectorState PIDVectorState = inactive;				// PID vector state for processing states
+int numPIDs = 0;										// PID counter for vector size change detection
+
 
 // TODO: Figure out a better way to deal with colors
 // Color definitions (float r, float g, float b, float alpha)
@@ -110,9 +108,9 @@ int main() {
 	}
 
 	// Vector size reservations, based on expected application usage, to minimize resize operations
+	PIDs.reserve(4);
 	DASHBOARD_Menus.reserve(4);
 	DASHBOARD_HotButtons.reserve(4);
-	DASHBOARD_PIDs.reserve(4);
 	DASHBOARD_Gauges.reserve(4);
 
 	// Draw background wallpaper from JPEG, save as VGImage for efficient re-draw
@@ -128,6 +126,7 @@ int main() {
 
 	// Serial object for ELM327 interface
 	Serial ELMSerial("/dev/ELM327", B38400);
+	ELMSerialPtr = &ELMSerial;
 	ELMSerial.setEndChar('>');
 	ELMSerial.setReadTimeout(5000);		// TODO: Investigate me
 
@@ -183,7 +182,7 @@ int main() {
 	while(1) {
 		loopTouch = threadTouch;											// Get touch for loop
 		loopTime = bcm2835_st_read();										// Get time for loop
-		serialData = ELMSerial.serialReadUntil();							// Get serial data for loop
+		//serialData = ELMSerial.serialReadUntil();							// Get serial data for loop
 		vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);					// Draw background image
 		ModeMenu.update(&loopTouch);										// Update mode menu
 
@@ -214,7 +213,7 @@ int main() {
 			PlotPIDCountButton.update();
 			LogPIDCountButton.update();	
 
-			DisplayPIDCountButton.setValue(DASHBOARD_PIDs.size());
+			DisplayPIDCountButton.setValue(PIDs.size());
 			PlotPIDCountButton.setValue(plotPIDCount);
 			LogPIDCountButton.setValue(logPIDCount);
 
@@ -223,7 +222,7 @@ int main() {
 			LogPIDUpdateRateButton.update();
 		}
 
-		
+		PIDVectorManager();
 		
 		//////////////////////////////////////
 		// Mode 1 - DASHBOARD
@@ -231,21 +230,6 @@ int main() {
 		// Dashboard mode run-time
 		if(currentMode == dashboardMode) {
 
-			if(DASHBOARD_PIDs.size() != numPIDs) {																				// Reset PID vector beginning iterator if vector size changes
-				numPIDs = DASHBOARD_PIDs.size();
-				DASHBOARD_CurrentPID = DASHBOARD_PIDs.begin();
-			}
-			if(!waitingOnData && DASHBOARD_PIDs.size()>0) {																		// Request data if: no pending request
-				ELMSerial.serialWrite((DASHBOARD_CurrentPID)->getCommand());
-				waitingOnData = true;
-			}
-			else if(waitingOnData && !serialData.empty() && DASHBOARD_PIDs.size()>0) {											// Update the current PID if data is present
-				waitingOnData = false;
-				(DASHBOARD_CurrentPID)->update(serialData, loopTime);
-				//SerialViewer.addNewLine((DASHBOARD_CurrentPID)->getCommand() + " - " + to_string((DASHBOARD_CurrentPID)->getRawUpdateRate()) + " Hz");
-				if(DASHBOARD_CurrentPID<DASHBOARD_PIDs.end())DASHBOARD_CurrentPID++;
-				if(DASHBOARD_CurrentPID == DASHBOARD_PIDs.end())DASHBOARD_CurrentPID = DASHBOARD_PIDs.begin();
-			}
 			for (std::vector<Button>::iterator it = DASHBOARD_HotButtons.begin(); it != DASHBOARD_HotButtons.end(); it++) {		// Update all hot buttons
 				(it)->updateTouch(&loopTouch);
 				(it)->update();
@@ -254,10 +238,10 @@ int main() {
 				(it)->updateTouch(&loopTouch);
 				string name = (it)->getPIDLink();
 				if(it->isTouched()) cout << "Gauge " << name << " is touched!" << endl;
-				auto CurrentGaugePID_It = find_if(DASHBOARD_PIDs.begin(), DASHBOARD_PIDs.end(), [&name](PID& obj) {return obj.getCommand().compare(name) == 0;});
+				auto CurrentGaugePID_It = find_if(PIDs.begin(), PIDs.end(), [&name](PID& obj) {return obj.getCommand().compare(name) == 0;});
 				
 				// TODO - Understand and fix
-				if(CurrentGaugePID_It == DASHBOARD_PIDs.end()) {
+				if(CurrentGaugePID_It == PIDs.end()) {
 					cout << "PID Not found" << endl;
 					(it)->update(0,"RPM");
 				} 
@@ -270,7 +254,7 @@ int main() {
 				(it)->update(&loopTouch);
 			}
 			// Run DisplayObjectManager (current page dashboard hotbuttons, display objects, and PIDs)
-			DisplayObjectManager(DASHBOARD_HotButtons, DASHBOARD_Gauges, DASHBOARD_PIDs, DASHBOARD_Menus);				
+			DisplayObjectManager(DASHBOARD_HotButtons, DASHBOARD_Gauges, PIDs, DASHBOARD_Menus);				
 		}
 
 		End();				// Write picture to screen
@@ -606,11 +590,41 @@ int main() {
 
 
 // PID Vector managment function: Handles update of PID vectors based on current application mode
-void PIDVectorManager () {
-	if(currentMode == dashboardMode) {
+void PIDVectorManager (void) {
 
+	if(PIDVectorState == inactive && (PIDs.size() != 0)) {				// Initial vector activation
+		PIDVectorState = active;
+		cout << "Activating PID Vector" << endl;
 	}
-
+	if(PIDVectorState != inactive && PIDVectorState != complete) {
+		if(numPIDs != PIDs.size()) {
+			if(PIDVectorState != busy) {								// Reset PID vector beginning iterator if vector modified
+				numPIDs = PIDs.size();		
+				CurrentPID = PIDs.begin();
+				cout << "PID Vector modified - resetting iterator to start" << endl; 	
+			}
+			else {														// Discard requested data if vector modified
+				string dump = ELMSerialPtr->serialReadUntil();
+				if(!dump.empty()) PIDVectorState = active;
+			}
+		}
+		else if(PIDVectorState == active) {
+			ELMSerialPtr->serialWrite((CurrentPID)->getCommand());		// Request PID data
+			PIDVectorState = busy;
+		}
+		else if(PIDVectorState == busy) {								// Read PID response
+			string serialResponse = ELMSerialPtr->serialReadUntil();
+			if(!serialResponse.empty()) {
+				(CurrentPID)->update(serialResponse, loopTime);		
+				if(CurrentPID < PIDs.end()) {
+					CurrentPID++;										// On to the next one
+					PIDVectorState = active;
+				}
+				if(CurrentPID == PIDs.end()) 
+					PIDVectorState = complete;						// All PIDs updated
+			}	
+		}
+	}
 }
 
 
