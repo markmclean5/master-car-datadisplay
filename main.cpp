@@ -223,6 +223,7 @@ int main() {
 		}
 
 		PIDVectorManager();
+		if (PIDVectorState == complete) PIDVectorState = active;	// Loop PID vector upon update completion
 		
 		//////////////////////////////////////
 		// Mode 1 - DASHBOARD
@@ -243,7 +244,7 @@ int main() {
 				// TODO - Understand and fix
 				if(CurrentGaugePID_It == PIDs.end()) {
 					cout << "PID Not found" << endl;
-					(it)->update(0,"RPM");
+					//(it)->update(0,"RPM");
 				} 
 				else
 					(it)->update((CurrentGaugePID_It)->getRawDatum(), (CurrentGaugePID_It)->getEngUnits());		
@@ -609,21 +610,38 @@ void PIDVectorManager (void) {
 			}
 		}
 		else if(PIDVectorState == active) {
-			ELMSerialPtr->serialWrite((CurrentPID)->getCommand());		// Request PID data
-			PIDVectorState = busy;
+			cout << "PID Vector active" << endl;
+			if(		(currentMode == dashboardMode && CurrentPID->dashboard_datalinks != 0) ||
+					(currentMode == plotMode && CurrentPID->plot_datalinks != 0) ||
+					(currentMode == logMode && CurrentPID->log_datalinks != 0)) {
+				cout << "Requirements met to update PID - setting vector busy" << endl;
+				ELMSerialPtr->serialWrite((CurrentPID)->getCommand());		// Request PID data if necessary
+				PIDVectorState = busy;
+			}
+			else {
+				cout << "Requirements not net to update PID - moving to next" << endl;
+				CurrentPID++;		// Move on to next PID
+			}
 		}
-		else if(PIDVectorState == busy) {								// Read PID response
+
+			
+		}
+		if(PIDVectorState == busy) {								// Read PID response
 			string serialResponse = ELMSerialPtr->serialReadUntil();
 			if(!serialResponse.empty()) {
+				cout << "Data recieved! updating PID" << endl;
 				(CurrentPID)->update(serialResponse, loopTime);		
 				if(CurrentPID < PIDs.end()) {
 					CurrentPID++;										// On to the next one
 					PIDVectorState = active;
-				}
-				if(CurrentPID == PIDs.end()) 
-					PIDVectorState = complete;						// All PIDs updated
 			}	
 		}
+		if(CurrentPID == PIDs.end()) {
+			cout << "PID Vector update complete." << endl;
+			PIDVectorState = complete;							// All PIDs updated
+			CurrentPID = PIDs.begin();
+		} 
+					
 	}
 }
 
@@ -739,7 +757,22 @@ void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& G
 
 			if(HOTBUTTON_DisplayObjectMenu_It->getSelectedButtonName().compare("Gauge") == 0) {
 				cout << "creating a gauge!!" << endl;
-				PIDs.emplace_back(HOTBUTTON_ParameterMenu_It->getSelectedButtonName());
+
+				std::vector<PID>::iterator p = PIDs.begin();
+				for (;p != PIDs.end(); p++){
+					if(p->getCommand().compare(HOTBUTTON_ParameterMenu_It->getSelectedButtonName())==0) {
+						p->dashboard_datalinks++;
+						cout << "PID exists in vector - adding dashboard datalink" << endl;
+						break;
+					}
+				}
+
+				if(p == PIDs.end()) {
+					PIDs.emplace_back(HOTBUTTON_ParameterMenu_It->getSelectedButtonName());
+					PIDs.back().dashboard_datalinks++;
+					cout << "Added new PID to vector and added dashboard datalink" << endl;
+				}
+				
 				Gauges.emplace_back(selectedHotbutton_It->getDOPosX(), selectedHotbutton_It->getDOPosY(), width/6, HOTBUTTON_ParameterMenu_It->getSelectedButtonName().append("Gauge"));
 				Gauges.back().draw();
 				Gauges.back().touchEnable();
@@ -783,11 +816,14 @@ void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& G
 						currentHotButton->touchEnable();
 					}
 				}
-				// Erase corresponding PID
+				// Erase corresponding PID if no other datalinks exist
 				auto PID_It = find_if(PIDs.begin(), PIDs.end(), [&PIDLink](const PID& obj) {return obj.command.compare(PIDLink) == 0;});
 				if(PID_It != PIDs.end()) {
-					cout << "Also deleting PID.." << endl;
-					PIDs.erase(PID_It);				
+					PID_It->dashboard_datalinks--;
+					if(PID_It->dashboard_datalinks == 0 && PID_It->plot_datalinks == 0 && PID_It->log_datalinks == 0) {
+						cout << "No remaining datalinks - deleting PID.." << endl;
+						PIDs.erase(PID_It);	
+					}	
 				}
 				break;
 			}

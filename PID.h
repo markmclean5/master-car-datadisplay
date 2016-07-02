@@ -74,6 +74,7 @@ private:	// Class Private properties
 
 
 
+
 public:		// Class members
 	// Setters (call before update!!!!)
 
@@ -123,6 +124,12 @@ public:		// Class members
 	std::string getBitPositionState(int);
 	std::string getBitPositionName(int);
 	int getNumBits(void);
+
+	// Datalinks - count number of elements for each mode which rely on data from this PID
+	int dashboard_datalinks;
+	int plot_datalinks;
+	int log_datalinks;
+
 
 
 private:	// Class private members

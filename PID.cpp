@@ -30,6 +30,11 @@ PID::PID(string PIDid) {
 	updateRate = 0;
 	desiredUpdateRate = 0;
 	lastUpdateTime = 0;
+
+	dashboard_datalinks = 0;
+	plot_datalinks = 0;
+	log_datalinks = 0;
+
 }
 
 /* PID configure method */
