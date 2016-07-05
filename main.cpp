@@ -175,6 +175,36 @@ int main() {
 	uint64_t lastLoopTime = 0;
 
 
+	// Log Mode
+
+	bool logging = false;
+
+	Button NewLogButton(width/8, height-80, width/4 - 20, 40, "NewLogButton");
+
+	TextView LogParameterView(width/8, height-185, width/4 - 20, 160, "LogParameterView");
+	LogParameterView.addNewLineIdentifier("FilenameLabel", "Filename:");
+	LogParameterView.setLineIdentifierText("FilenameLabel", "");
+	LogParameterView.addNewLineIdentifier("Filename", "");
+	LogParameterView.setLineIdentifierText("Filename", "-----------");
+	LogParameterView.addNewLineIdentifier("EntriesLabel", "Entries:");
+	LogParameterView.setLineIdentifierText("EntriesLabel", "");
+	LogParameterView.addNewLineIdentifier("Entries", "");
+	LogParameterView.setLineIdentifierText("Entries", "-----");
+
+	LogParameterView.addNewLineIdentifier("PIDsLabel", "PIDs:");
+	LogParameterView.setLineIdentifierText("PIDsLabel", "");
+	LogParameterView.addNewLineIdentifier("PIDs", "");
+	LogParameterView.setLineIdentifierText("PIDs", "--");
+
+	LogParameterView.addNewLineIdentifier("UpdateRateLabel", "Rate:");
+	LogParameterView.setLineIdentifierText("UpdateRateLabel", "");
+	LogParameterView.addNewLineIdentifier("UpdateRate", "");
+	LogParameterView.setLineIdentifierText("UpdateRate", "-- Hz");
+
+
+	Button LogStateControlButton(width/8, height - 290, width/4 - 20, 40, "LogStateControlButton");
+	LogStateControlButton.touchEnable();
+
 
 	//////////////////////////////////////
 	// Main Execution Loop
@@ -230,7 +260,6 @@ int main() {
 		//////////////////////////////////////
 		// Dashboard mode run-time
 		if(currentMode == dashboardMode) {
-
 			for (std::vector<Button>::iterator it = DASHBOARD_HotButtons.begin(); it != DASHBOARD_HotButtons.end(); it++) {		// Update all hot buttons
 				(it)->updateTouch(&loopTouch);
 				(it)->update();
@@ -240,25 +269,60 @@ int main() {
 				string name = (it)->getPIDLink();
 				if(it->isTouched()) cout << "Gauge " << name << " is touched!" << endl;
 				auto CurrentGaugePID_It = find_if(PIDs.begin(), PIDs.end(), [&name](PID& obj) {return obj.getCommand().compare(name) == 0;});
-				
 				// TODO - Understand and fix
-				if(CurrentGaugePID_It == PIDs.end()) {
-					cout << "PID Not found" << endl;
-					//(it)->update(0,"RPM");
-				} 
-				else
-					(it)->update((CurrentGaugePID_It)->getRawDatum(), (CurrentGaugePID_It)->getEngUnits());		
+				if(CurrentGaugePID_It != PIDs.end())
+					(it)->update((CurrentGaugePID_It)->getRawDatum(), (CurrentGaugePID_It)->getEngUnits());
 			}
-			//SerialViewer.update();
-			// Update all menus
-			for (std::vector<Menu>::iterator it = DASHBOARD_Menus.begin(); it != DASHBOARD_Menus.end(); it++) {
+			for (std::vector<Menu>::iterator it = DASHBOARD_Menus.begin(); it != DASHBOARD_Menus.end(); it++) {					// Update all menus
 				(it)->update(&loopTouch);
 			}
-			// Run DisplayObjectManager (current page dashboard hotbuttons, display objects, and PIDs)
-			DisplayObjectManager(DASHBOARD_HotButtons, DASHBOARD_Gauges, PIDs, DASHBOARD_Menus);				
+			
+			DisplayObjectManager(DASHBOARD_HotButtons, DASHBOARD_Gauges, PIDs, DASHBOARD_Menus);								// Run DisplayObjectManager (current page dashboard hotbuttons, display objects, and PIDs)		
 		}
 
+		
+		//////////////////////////////////////
+		// Mode 2 - PLOT
+		//////////////////////////////////////
+		// Plot mode run-time
+		if(currentMode == plotMode) {
+			
+		}
+
+		//////////////////////////////////////
+		// Mode 3 - LOG
+		//////////////////////////////////////
+		// Plot mode run-time
+		if(currentMode == logMode) {
+			NewLogButton.update();
+			LogParameterView.update();
+			LogStateControlButton.updateTouch(&loopTouch);
+			LogStateControlButton.update();
+
+			if(LogStateControlButton.isPressed()) {
+				if(!logging) logging = true;
+				else logging = false;
+
+				if(logging) {
+					LogStateControlButton.select();
+					LogStateControlButton.setText("Stop");
+				}
+				else {
+					LogStateControlButton.deselect();
+					LogStateControlButton.setText("Start");
+
+				}
+			}
+		}
+
+
+
+
+
 		End();				// Write picture to screen
+
+
+
 
 		
 		/*

@@ -67,6 +67,50 @@ FramerateButton {
 	selectable = "false";
 };
 
+NewLogButton {
+	name = "NewLogButton";
+	cornerRadius = "10";
+	borderWidth = "1";
+	borderColor = ["0.43", "0.43", "0.43", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "C";
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	defaultText = "New File";
+	enableValue = "false";
+	pressDebounce = "500";
+	selectable = "false";
+};
+
+LogParameterView {
+	cornerRadius = "10";
+	borderWidth = "1";
+	borderColor = ["0.43", "0.43", "0.43", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	numLines = "8";
+	pressDebounce = "500";
+}
+
+LogStateControlButton {
+	name = "LogStateControlButton";
+	cornerRadius = "10";
+	borderWidth = "1";
+	borderColor = ["0.43", "0.43", "0.43", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "C";
+	textColor = ["0.0", "1.0", "0.0", "1.0"];
+	defaultText = "Start";
+	enableValue = "false";
+	pressDebounce = "500";
+	selectable = "true";
+	selectedBackgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	selectedBorderColor = ["1.0", "0.0", "0.0", "1.0"];
+	selectedBorderWidth = "3";
+	selectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
+};
+
 PIDCountButton {
 	name = "PIDCountButton";
 	cornerRadius = "20";
