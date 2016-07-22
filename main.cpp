@@ -16,6 +16,8 @@ using namespace std;
 #include "avengeance.inc"	// *** Label Fonts
 #include <bcm2835.h>
 #include <vector>
+#include <time.h>
+#include <fstream>			// log file
 
 // Project Classes & utilities
 #include "touchscreen.h"
@@ -206,6 +208,28 @@ int main() {
 	LogStateControlButton.touchEnable();
 
 
+	string logTimeString = "Time String ";
+	time_t t = time(0);
+
+	struct tm * time_tm = localtime (&t);
+
+	logTimeString.append(std::to_string(time_tm->tm_mon+1));
+
+
+	cout << logTimeString << endl;
+
+ 	cout << (time_tm->tm_mon + 1) << '-'
+         <<  time_tm->tm_mday << '-'
+         << (time_tm->tm_year + 1900)
+         << endl;
+
+
+     // LOG FILE
+     ofstream logfile;
+     string logPath = "/tmp/carlogs/";
+     string logFileName;
+
+
 	//////////////////////////////////////
 	// Main Execution Loop
 	///////////////////////////////////////
@@ -300,8 +324,40 @@ int main() {
 			LogStateControlButton.update();
 
 			if(LogStateControlButton.isPressed()) {
-				if(!logging) logging = true;
-				else logging = false;
+				if(!logging) {			// Start logging
+					logging = true;
+					
+					time_t t = time(0);
+
+					struct tm * time_tm = localtime (&t);
+
+					string logTimeString = std::to_string(time_tm->tm_mon+1);
+					logTimeString.append("_");
+					logTimeString.append(std::to_string(time_tm->tm_mday));
+					logTimeString.append("_");
+					logTimeString.append(std::to_string(time_tm->tm_year + 1900));
+					logTimeString.append("_");
+					logTimeString.append(std::to_string(time_tm->tm_hour));
+					logTimeString.append("_");
+					logTimeString.append(std::to_string(time_tm->tm_min));
+					logTimeString.append("_");
+					logTimeString.append(std::to_string(time_tm->tm_sec));
+
+					cout << "Log Time String: " << logTimeString << endl;
+					LogParameterView.setLineIdentifierText("Filename", logTimeString);
+
+					logFileName = "../";
+					logFileName.append(logTimeString);
+
+					logfile.open(logFileName);
+					logfile << "TEST";
+					logfile.close();
+
+				}
+				else {
+					logging = false;	// Stop logging
+					LogParameterView.setLineIdentifierText("Filename", "-----------");
+				}
 
 				if(logging) {
 					LogStateControlButton.select();
