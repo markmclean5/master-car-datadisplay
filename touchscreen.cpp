@@ -31,7 +31,13 @@ void *eventThread(void *arg)
 		quitState = 1;
 		return &quitState;
 	}
-
+		int result = ioctl(threadTouch.fd, EVIOCGRAB, 1); // Grab touch for this application
+		
+	// for testing purposes
+	printf("Getting exclusive access: ");
+    printf("%s\n", (result == 0) ? "SUCCESS" : "FAILURE");
+	
+	
 	int mt_tracking_id = 0;
 	bool btn_touch = false;
 	int abs_x = 0;
