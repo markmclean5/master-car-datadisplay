@@ -105,6 +105,7 @@ int main() {
 	if (!bcm2835_init())					// Initialize bcm2835 library
 		return 1;
 	if (touchinit(width, height) != 0) {	// Initialize touchscreen
+		ioctl(threadTouch.fd, EVIOCGRAB, 1); // Grab touch for this application
 		fprintf(stderr, "Unable to initialize touchscreen\n");
 		exit(1);
 	}
@@ -793,6 +794,7 @@ void modeManager (touch_t* menuTouch) {
 		if(ModeMenuPtr->isButtonSelected("settings")) currentMode = settingsMode;
 		if(ModeMenuPtr->isButtonSelected("development")) currentMode = developmentMode;
 		if(ModeMenuPtr->isButtonSelected("exit")) {
+			ioctl(threadTouch.fd, EVIOCGRAB, 1); // Release touch for this application
 			exit(EXIT_SUCCESS);
 		}
 	}
