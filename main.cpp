@@ -47,6 +47,11 @@ void modeManager (touch_t*);
 void PIDVectorManager(void);
 
 
+// PID Vector update rate times
+uint64_t lastPIDVectorUpdateTime = 0;
+uint64_t secondLastPIDVectorUpdateTime = 0;
+
+
 // Mode Management enumeration definition and application mode definitions
 enum ApplicationMode {
 						noMode,
@@ -174,9 +179,9 @@ int main() {
 
 	
 	Button FramerateButton(25, 18, 50, 35, "FramerateButton");
+	Button PIDUpdateRateButton(80, 18, 50, 35, "FramerateButton");
 
 	uint64_t lastLoopTime = 0;
-
 
 	// Log Mode
 
@@ -251,6 +256,14 @@ int main() {
 		FramerateButton.setValue(refreshRate);
 		FramerateButton.update();
 
+		float PIDUpdateRate;
+
+		if(lastPIDVectorUpdateTime != secondLastPIDVectorUpdateTime)
+			PIDUpdateRate = 1000000/(lastPIDVectorUpdateTime - secondLastPIDVectorUpdateTime);
+		else PIDUpdateRate = 0;
+
+		PIDUpdateRateButton.setValue(PIDUpdateRate);
+		PIDUpdateRateButton.update();
 
 
 		if(currentMode == developmentMode) {
@@ -718,6 +731,9 @@ void PIDVectorManager (void) {
 		PIDVectorState = active;
 		cout << "Activating PID Vector" << endl;
 	}
+
+
+	
 	if(PIDVectorState != inactive && PIDVectorState != complete) {
 		if(numPIDs != PIDs.size()) {
 			if(PIDVectorState != busy) {								// Reset PID vector beginning iterator if vector modified
@@ -761,6 +777,10 @@ void PIDVectorManager (void) {
 			cout << "PID Vector update complete." << endl;
 			PIDVectorState = complete;							// All PIDs updated
 			CurrentPID = PIDs.begin();
+
+			// Capture vector update completion time
+			secondLastPIDVectorUpdateTime = lastPIDVectorUpdateTime;
+			lastPIDVectorUpdateTime = bcm2835_st_read();
 		} 
 					
 	}
