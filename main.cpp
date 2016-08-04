@@ -110,10 +110,14 @@ int main() {
 	if (!bcm2835_init())					// Initialize bcm2835 library
 		return 1;
 	if (touchinit(width, height) != 0) {	// Initialize touchscreen
-		ioctl(threadTouch.fd, EVIOCGRAB, 1); // Grab touch for this application
+		
 		fprintf(stderr, "Unable to initialize touchscreen\n");
 		exit(1);
 	}
+	
+
+	
+	//end testing purposes
 
 	// Vector size reservations, based on expected application usage, to minimize resize operations
 	PIDs.reserve(4);
@@ -730,8 +734,16 @@ void PIDVectorManager (void) {
 	if(PIDVectorState == inactive && (PIDs.size() != 0)) {				// Initial vector activation
 		PIDVectorState = active;
 		cout << "Activating PID Vector" << endl;
+		
+		
 	}
 
+	
+	if(PIDs.size() == 0 && PIDVectorState == active){
+		
+		PIDVectorState = inactive;
+		cout<< "Dactivating PID Vector" <<endl;
+	}
 
 	
 	if(PIDVectorState != inactive && PIDVectorState != complete) {
@@ -814,7 +826,7 @@ void modeManager (touch_t* menuTouch) {
 		if(ModeMenuPtr->isButtonSelected("settings")) currentMode = settingsMode;
 		if(ModeMenuPtr->isButtonSelected("development")) currentMode = developmentMode;
 		if(ModeMenuPtr->isButtonSelected("exit")) {
-			ioctl(threadTouch.fd, EVIOCGRAB, 1); // Release touch for this application
+			ioctl(threadTouch.fd, EVIOCGRAB, 0); // Release touch for this application
 			exit(EXIT_SUCCESS);
 		}
 	}
