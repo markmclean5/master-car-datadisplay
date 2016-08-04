@@ -29,7 +29,7 @@
 
 # 0105 - Engine Coolant Temperature
 0105Gauge {
-	PIDLink = "0105";
+	PIDLink = "01051";
 	numRanges = "1";
 	borderColor = ["1.0", "1.0", "1.0", "1.0"];
 	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
@@ -225,8 +225,8 @@
 };
 
 # 010C - Engine RPM
-010CGauge {
-	PIDLink = "010C";
+010C1Gauge {
+	PIDLink = "010C1";
 	numRanges = "1";
 	borderColor = ["1.0", "1.0", "1.0", "1.0"];
 	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];
