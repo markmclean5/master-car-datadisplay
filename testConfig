@@ -48,6 +48,22 @@ ModeMenu {
 
 };
 
+ConnectionButton {
+	name = "ConnectionButton";
+	cornerRadius = "20";
+	borderWidth = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "C";
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	defaultText = "--------------";
+	enableValue = "false";
+	pressDebounce = "500";
+	selectable = "false";
+};
+
+
 FramerateButton {
 	name = "FramerateButton";
 	cornerRadius = "20";

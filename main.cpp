@@ -76,6 +76,12 @@ enum PIDVectorState {
 						complete		// All PIDs in vector have been updated
 };
 
+
+// Connection Status Enums
+enum ConnectionStatus { disconnected, connecting, connected };
+
+enum ParmStatus { unknown, requested, known };
+
 //Dashboard mode vectors and states
 vector<Button> DASHBOARD_HotButtons;
 vector<Gauge> DASHBOARD_Gauges;
@@ -142,64 +148,38 @@ int main() {
 	ELMSerial.setEndChar('>');
 	ELMSerial.setReadTimeout(5000);		// TODO: Investigate me
 
-	// Iniial reset of ELM327
-	ELMSerial.serialWrite("ATZ");
-	ELMSerial.serialReadUntil();
-	
 
-	// TODO: Move to better location
-	// Left-hand side development status display objects
-	TextView ApplicationStatusView(width/3 - width/6, height-75, width/3, 30, "StatusView");
-	ApplicationStatusView.addNewLineIdentifier("AppStatus", "Application: ");
-	ApplicationStatusView.setLineIdentifierText("AppStatus", "Initializing");
-	TextView CommStatusView(width/3 - width/6, height-110, width/3, 30, "StatusView");
-	CommStatusView.addNewLineIdentifier("CommStatus", "Comm: ");
-	CommStatusView.setLineIdentifierText("CommStatus", "Disconnected");
-	TextView PIDSupportView(width/3 - width/6, height-145, width/3, 30, "StatusView");
-	PIDSupportView.addNewLineIdentifier("SupportedPIDs", "");
-	PIDSupportView.setLineIdentifierText("SupportedPIDs", "--- Supported PIDs");
-	int dispButtonWidth = ((width/3) - 30) / 3;
-	int dispButtonHeight = 35;
-	int displayPIDCount = 0;
-	int plotPIDCount = 0;
-	int logPIDCount = 0;
-	Button DisplayPIDCountButton(10 + 0.5 * dispButtonWidth, height - 195, dispButtonWidth, dispButtonHeight, "PIDCountButton");
-	Button PlotPIDCountButton(20 + 1.5 * dispButtonWidth, height - 195, dispButtonWidth, dispButtonHeight, "PIDCountButton");
-	Button LogPIDCountButton(30 + 2.5 * dispButtonWidth, height - 195, dispButtonWidth, dispButtonHeight, "PIDCountButton");
-	Button DisplayPIDUpdateRateButton(10 + 0.5 * dispButtonWidth, height - 235, dispButtonWidth, dispButtonHeight, "PIDUpdateRateButton");
-	Button PlotPIDUpdateRateButton(20 + 1.5 * dispButtonWidth, height - 235, dispButtonWidth, dispButtonHeight, "PIDUpdateRateButton");
-	Button LogPIDUpdateRateButton(30 + 2.5 * dispButtonWidth, height - 235, dispButtonWidth, dispButtonHeight, "PIDUpdateRateButton");
-
-	
 	// Dashboard Mode items
 	int numPIDs = 0;
 	bool waitingOnData = false;
-
-	ELMSerial.serialWrite("ATZ");
-	string serialData = "";
-
-
-	while(serialData.empty()) {
-		serialData = ELMSerial.serialReadUntil();
-	}
-
-	serialData = "";
-	ELMSerial.serialWrite("ATSP0");
-
-	while(serialData.empty()) {
-		serialData = ELMSerial.serialReadUntil();
-	}
-
-	serialData = "";
 
 	int gaugeCenterX = width/2;
 	int gaugeCenterY = height/2-30;
 	int gaugeRadius = height/2 - 80;
 
 	
+	// Bottom of display status readouts
 	Button FramerateButton(25, 18, 50, 35, "FramerateButton");
 	Button PIDUpdateRateButton(80, 18, 50, 35, "FramerateButton");
-
+	
+	Button ELMConnectionStatusButton(200, 18, 100, 35, "ConnectionButton");
+	Button ECUConnectionStatusButton(350, 18, 160, 35, "ConnectionButton");
+	
+	// ELM connection and ECU connection status
+	ConnectionStatus 	ELMStatus 					= disconnected;
+	uint64_t 					ELMConnectStartTime 	= 0;
+	int 							ELMConnectTimeout 	= 1000; 					// Timeout, milliseconds
+	string 						ELMResponseString 	= "";
+	string 						ELMVersion 					= "";
+	ParmStatus 				ELMVersionStat 			= unknown;
+	string 						Protocol 						= "";
+	ParmStatus 				ProtocolStat 				= unknown;
+	ConnectionStatus 	ECUStatus 					= disconnected;
+	int 							ECUConnectTries 		= 0;
+	string 						ECUResponseString 	= "";
+	string 						VIN 								= "";
+	ParmStatus 				VINStat 						= unknown;
+	
 	uint64_t lastLoopTime = 0;
 
 	// Log Mode
@@ -259,12 +239,106 @@ int main() {
 	// Main Execution Loop
 	///////////////////////////////////////
 	while(1) {
+		
+		// **** Global Loop  Parameters ****//
+		
 		loopTouch = threadTouch;											// Get touch for loop
 		loopTime = bcm2835_st_read();										// Get time for loop
 		//serialData = ELMSerial.serialReadUntil();							// Get serial data for loop
 		vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);					// Draw background image
 		ModeMenu.update(&loopTouch);										// Update mode menu
 
+	
+	// Autoconnection and connection statusing logic	
+	if(ELMStatus == disconnected) {
+		ELMConnectionStatusButton.setText("ELM Connecting");
+		ELMStatus = connecting;
+		ELMSerial.serialWrite("ATZ"); //ELM reset
+		ELMConnectStartTime = loopTime;		
+	}
+	if(ELMStatus == connecting && (loopTime < (ELMConnectStartTime + ELMConnectTimeout*1000))) {
+		ELMResponseString = ELMSerial.serialReadUntil();
+			if(!ELMResponseString.empty()) {
+				ELMStatus = connected;
+				ELMConnectionStatusButton.setText("ELM Connected");
+					string resp = "";
+					ELMSerial.serialWrite("ATE0"); // set elm327 output for NO ECHO
+					while(resp.empty()) {
+						resp = ELMSerial.serialReadUntil();
+					}
+					resp = "";
+					ELMSerial.serialWrite("ATSP0");	// set ELM327 to automatically detect protocol
+					while(resp.empty()) {
+						resp = ELMSerial.serialReadUntil();
+					}
+			}
+	}
+	// ELM327 connection timeout
+	if(ELMStatus == connecting && (loopTime >= (ELMConnectStartTime + ELMConnectTimeout*1000))) {		
+		ELMStatus = disconnected;
+		ELMConnectionStatusButton.setText("ELM Timeout");
+	}
+	// Reqest ELM327 Version information
+	if(ELMStatus == connected && ELMVersionStat == unknown) {			
+		ELMSerial.serialWrite("ATI");
+		ELMVersionStat = requested;
+	}
+
+	// Requesting ELM327 Version information
+	if(ELMVersionStat == requested) {
+		ELMVersion = ELMSerial.serialReadUntil();
+		if(!ELMVersion.empty()){
+			ELMVersionStat = known; 
+			ELMConnectionStatusButton.setText(ELMVersion);
+		}
+	}
+	
+	// Connect to the ECU after recieving ELM Version information
+	if(ELMVersionStat == known && ECUStatus == disconnected) {
+		ECUStatus = connecting;
+		ELMSerial.serialWrite("0101");
+	}
+	
+	// Connecting to the ECU
+	if(ECUStatus == connecting ) {
+		ECUResponseString = ELMSerial.serialReadUntil();
+		if(!ECUResponseString.empty()) {
+			cout << ECUResponseString << endl;
+			ECUConnectTries++;
+			string txt = "ECU Connecting - ";
+			cout<<txt<<endl;
+			txt.append(std::to_string(ECUConnectTries));
+			cout<<txt<<endl;
+			ECUConnectionStatusButton.setText(txt);
+			if(ECUResponseString.find("41 01") != string::npos) {
+				ECUStatus = connected;
+			}
+			else {
+				ECUStatus = disconnected;
+				ECUResponseString = "";
+			}
+		}
+
+	}
+
+	// Request current connection protocol information after connecting to the ECU
+	if(ECUStatus == connected && ProtocolStat == unknown){
+		ELMSerial.serialWrite("ATDP");
+		ProtocolStat = requested;
+	}
+
+	// Requesting protocol information
+	if(ProtocolStat == requested) {
+		Protocol = ELMSerial.serialReadUntil();
+		if(!Protocol.empty()){
+			ProtocolStat = known; 
+			ECUConnectionStatusButton.setText(Protocol);
+		}
+
+	}
+	
+	
+		
 		// TODO: decide if this needs touch and should update the menu - if so remove double update
 		modeManager(&loopTouch);
 
@@ -275,6 +349,7 @@ int main() {
 		FramerateButton.setValue(refreshRate);
 		FramerateButton.update();
 
+		// PID Update rate button
 		float PIDUpdateRate;
 
 		if(lastPIDVectorUpdateTime != secondLastPIDVectorUpdateTime)
@@ -284,29 +359,12 @@ int main() {
 		PIDUpdateRateButton.setValue(PIDUpdateRate);
 		PIDUpdateRateButton.update();
 
-
+		// Connection status button
+		ELMConnectionStatusButton.update();
+		ECUConnectionStatusButton.update();
+		
 		if(currentMode == developmentMode) {
-			// Left-hand side development status display
-			CommStatusView.update();
-			ApplicationStatusView.update();
-			PIDSupportView.update();
-
-			Fill(255, 255, 255, 1.);
-			TextMid (10 + 0.5 * dispButtonWidth, height - 175, "Disp.", SansTypeface, 12);
-			TextMid (20 + 1.5 * dispButtonWidth, height - 175, "Plot", SansTypeface, 12);
-			TextMid (30 + 2.5 * dispButtonWidth, height - 175, "Log", SansTypeface, 12);
-
-			DisplayPIDCountButton.update();
-			PlotPIDCountButton.update();
-			LogPIDCountButton.update();	
-
-			DisplayPIDCountButton.setValue(PIDs.size());
-			PlotPIDCountButton.setValue(plotPIDCount);
-			LogPIDCountButton.setValue(logPIDCount);
-
-			DisplayPIDUpdateRateButton.update();
-			PlotPIDUpdateRateButton.update();
-			LogPIDUpdateRateButton.update();
+			// Development mode code
 		}
 
 		PIDVectorManager();
@@ -415,246 +473,6 @@ int main() {
 
 		
 		/*
-		//////////////////////////////////////
-		// Mode 4 - Communication test mode
-		//////////////////////////////////////
-		if(ModeMenu.isButtonSelected("m4")) {
-			
-			enum ConnectionStatus { disconnected, connecting, connected };
-
-			enum ParmStatus { unknown, requested, known };
-
-			
-			string VIN 			= "";
-			ParmStatus VINStat = unknown;
-			string ELMVersion = "";
-			ParmStatus ELMVersionStat = unknown;
-			string Protocol = "";
-			ParmStatus ProtocolStat = unknown;
-			
-			// ELM327
-			ConnectionStatus ELMStatus = disconnected;
-			uint64_t ELMConnectStartTime = 0;
-			int ELMConnectTimeout = 1000; 					// Timeout, milliseconds
-			string ELMResponseString = "";
-
-			//ECU
-			ConnectionStatus ECUStatus = disconnected;
-			int ECUConnectTries = 0;
-			string ECUResponseString = "";
-
-			// Display items / setup
-			TextView ConnectionStatusView (width/2, height/2-50, width/3-20, 360, "ConnectView");
-			TextView ConnectStats(width-width/6, height/2 - 50, width/3-20, 360, "ConnectView");
-			Button ConnectButton(width/6, 100, width/3 - 20, 70, "ConnectButton");
-			ConnectButton.touchEnable();
-			ConnectionStatusView.addNewLineIdentifier("ELMStatus", "ELM Status: ");
-			ConnectionStatusView.setLineIdentifierText("ELMStatus", "Disconnected");
-			ConnectionStatusView.addNewLineIdentifier("ELMVersion", "ELM Version: ");
-			ConnectionStatusView.setLineIdentifierText("ELMVersion", "--------");
-			ConnectionStatusView.addNewLineIdentifier("ECUStatus", "ECU Status: ");
-			ConnectionStatusView.setLineIdentifierText("ECUStatus", "Disconnected");
-			ConnectionStatusView.addNewLineIdentifier("ECUTries", "ECU Tries: ");
-			ConnectionStatusView.setLineIdentifierText("ECUTries", "----");
-			ConnectionStatusView.addNewLineIdentifier("Protocol", "Protocol: ");
-			ConnectionStatusView.setLineIdentifierText("Protocol", "--------");
-			ConnectionStatusView.addNewLineIdentifier("VIN", "VIN: ");
-			ConnectionStatusView.setLineIdentifierText("VIN", "--------");			
-			
-
-			while(1) {
-				// Loop guts
-				loopTime = bcm2835_st_read();
-				loopTouch = threadTouch;
-				vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);
-				ModeMenu.update(&loopTouch);
-
-				// Page Graphics
-				Fill(255,255,255,1);
-				TextMid(width/2, height - 100, "Connection", SansTypeface, 20);
-				TextMid(width-width/6, height - 100, "Vehicle Information", SansTypeface, 20);
-
-				// Connect to the ELM327
-				if(ConnectButton.isPressed() && ELMStatus == disconnected) {										
-					ELMStatus = connecting;
-					ConnectionStatusView.setLineIdentifierText("ELMStatus", "Connecting");
-					ELMSerial.serialWrite("ATZ");
-					ELMConnectStartTime = loopTime;
-				}
-
-				// Connecting to the ELM327
-				if(ELMStatus == connecting && (loopTime < (ELMConnectStartTime + ELMConnectTimeout*1000))) {		
-					ELMResponseString = ELMSerial.serialReadUntil();
-					if(!ELMResponseString.empty()) {
-						ELMStatus = connected;
-						ConnectionStatusView.setLineIdentifierText("ELMStatus", "Connected");
-						
-						string resp = "";
-						ELMSerial.serialWrite("ATE0"); // set elm327 output for NO ECHO
-						while(resp.empty()) {
-							resp = ELMSerial.serialReadUntil();
-						}
-
-						resp = "";
-						ELMSerial.serialWrite("ATSP0");
-						
-						while(resp.empty()) {
-							resp = ELMSerial.serialReadUntil();
-						}
-					}
-				}
-
-				// ELM327 connection timeout
-				if(ELMStatus == connecting && (loopTime >= (ELMConnectStartTime + ELMConnectTimeout*1000))) {		
-					ELMStatus = disconnected;
-					ConnectionStatusView.setLineIdentifierText("ELMStatus", "Timeout");
-				}
-
-
-				// Reqest ELM327 Version information
-				if(ELMStatus == connected && ELMVersionStat == unknown) {			
-					ELMSerial.serialWrite("ATI");
-					ELMVersionStat = requested;
-				}
-
-				// Requesting ELM327 Version information
-				if(ELMVersionStat == requested) {
-					ELMVersion = ELMSerial.serialReadUntil();
-					if(!ELMVersion.empty()){
-						ELMVersionStat = known; 
-						ConnectionStatusView.setLineIdentifierText("ELMVersion", ELMVersion );
-					}
-
-				}
-
-
-				// Connect to the ECU after recieving ELM Version information
-				if(ELMVersionStat == known && ECUStatus == disconnected) {
-					ECUStatus = connecting;
-					ConnectionStatusView.setLineIdentifierText("ECUStatus", "Connecting");
-					ELMSerial.serialWrite("0101");
-
-				}
-
-				// Connecting to the ECU
-				if(ECUStatus == connecting ) {
-					ECUResponseString = ELMSerial.serialReadUntil();
-					if(!ECUResponseString.empty()) {
-						cout << ECUResponseString << endl;
-						ECUConnectTries++;
-						ConnectionStatusView.setLineIdentifierText("ECUTries", to_string(ECUConnectTries));
-						if(ECUResponseString.find("41 01") != string::npos) {
-							ECUStatus = connected;
-							ConnectionStatusView.setLineIdentifierText("ECUStatus", "Connected");
-						}
-						else {
-							ECUStatus = disconnected;
-							ECUResponseString = "";
-						}
-					}
-
-				}
-
-				// Request current connection protocol information after connecting to the ECU
-				if(ECUStatus == connected && ProtocolStat == unknown){
-					ELMSerial.serialWrite("ATDP");
-					ProtocolStat = requested;
-				}
-
-				// Requesting protocol information
-				if(ProtocolStat == requested) {
-					Protocol = ELMSerial.serialReadUntil();
-					if(!Protocol.empty()){
-						ProtocolStat = known; 
-						ConnectionStatusView.setLineIdentifierText("Protocol", Protocol );
-					}
-
-				}
-
-
-
-				if(ProtocolStat == known && VINStat == unknown){
-					// Request VIN: OBDII PID 0902 (mode 09; cmd 02)
-					ELMSerial.serialWrite("0902");
-					VINStat = requested;
-				}
-
-
-
-				
-				if(VINStat == requested ){
-
-					// Get raw VIN data: this is a string of hexidecimal characters
-					VIN = ELMSerial.serialReadUntil(); // reads until prompt char received
-					//VIN="090249 02 01 32 4D 45 46 49 02 02 4D 37 34 57 ";
-					// this is a comment
-					string decodedVIN = "";
-
-
-
-					size_t found = 0;
-					while(found!=string::npos){
-						found = VIN.find("49 02", found); // returns pos of first occurence
-						if(found != string::npos) {
-							decodedVIN.append(VIN.substr(found+9, 12));
-							found +=12;
-						}
-							
-					}
-
-					
-
-					std::string::iterator end_pos = std::remove(decodedVIN.begin(), decodedVIN.end(), ' ');
-					decodedVIN.erase(end_pos, decodedVIN.end());
-
-
-					string finalVIN = "";
-					for(int i=0;i<decodedVIN.length();i+=2){
-						finalVIN += ( (char)strtoul(decodedVIN.substr(i, 2).c_str(), NULL, 16) );
-						//cout << "stroutl " << (char)strtoul(decodedVIN.substr(i, 2).c_str(), NULL, 16) << endl;
-					}
-					
-					if( !VIN.empty() ){
-						ConnectionStatusView.setLineIdentifierText("VIN", finalVIN);
-						VINStat = known;
-					}
-
-				}
-
-				ConnectButton.updateTouch(&loopTouch);
-				ConnectButton.update();
-
-				ConnectionStatusView.update();
-				ConnectStats.update();
-
-				if(ModeMenu.isButtonPressed("m1")) {
-					ModeMenu.selectButton("m1");
-					break;
-				}
-				if(ModeMenu.isButtonPressed("m2")) {
-					ModeMenu.selectButton("m2");
-					break;
-				}
-				if(ModeMenu.isButtonPressed("m3")) {
-					ModeMenu.selectButton("m3");
-					break;
-				}
-				if(ModeMenu.isButtonPressed("m5")) {
-					ModeMenu.selectButton("m5");
-					break;
-				}
-				
-				if(ModeMenu.isButtonPressed("m6")) {
-					ModeMenu.selectButton("m6");
-					break;
-				}
-				
-				
-				
-				End();
-			}
-
-		}
 		//////////////////////////////////////
 		// Mode 5 - PID Support Check
 		//////////////////////////////////////
