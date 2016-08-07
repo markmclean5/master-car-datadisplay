@@ -225,7 +225,7 @@
 };
 
 # 010C - Engine RPM
-010C1Gauge {
+010CGauge {
 	PIDLink = "010C1";
 	numRanges = "1";
 	borderColor = ["1.0", "1.0", "1.0", "1.0"];

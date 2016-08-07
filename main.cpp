@@ -177,6 +177,21 @@ int main() {
 
 	ELMSerial.serialWrite("ATZ");
 	string serialData = "";
+
+
+	while(serialData.empty()) {
+		serialData = ELMSerial.serialReadUntil();
+	}
+
+	serialData = "";
+	ELMSerial.serialWrite("ATSP0");
+
+	while(serialData.empty()) {
+		serialData = ELMSerial.serialReadUntil();
+	}
+
+	serialData = "";
+
 	int gaugeCenterX = width/2;
 	int gaugeCenterY = height/2-30;
 	int gaugeRadius = height/2 - 80;
@@ -733,7 +748,7 @@ void PIDVectorManager (void) {
 
 	if(PIDVectorState == inactive && (PIDs.size() != 0)) {				// Initial vector activation
 		PIDVectorState = active;
-		cout << "Activating PID Vector" << endl;
+		//cout << "Activating PID Vector" << endl;
 		
 		
 	}
@@ -742,7 +757,7 @@ void PIDVectorManager (void) {
 	if(PIDs.size() == 0 && PIDVectorState == active){
 		
 		PIDVectorState = inactive;
-		cout<< "Dactivating PID Vector" <<endl;
+		//cout<< "Dactivating PID Vector" <<endl;
 	}
 
 	
@@ -751,7 +766,7 @@ void PIDVectorManager (void) {
 			if(PIDVectorState != busy) {								// Reset PID vector beginning iterator if vector modified
 				numPIDs = PIDs.size();		
 				CurrentPID = PIDs.begin();
-				cout << "PID Vector modified - resetting iterator to start" << endl; 	
+				//cout << "PID Vector modified - resetting iterator to start" << endl; 	
 			}
 			else {														// Discard requested data if vector modified
 				string dump = ELMSerialPtr->serialReadUntil();
@@ -759,16 +774,16 @@ void PIDVectorManager (void) {
 			}
 		}
 		else if(PIDVectorState == active) {
-			cout << "PID Vector active" << endl;
+			//cout << "PID Vector active" << endl;
 			if(		(currentMode == dashboardMode && CurrentPID->dashboard_datalinks != 0) ||
 					(currentMode == plotMode && CurrentPID->plot_datalinks != 0) ||
 					(currentMode == logMode && CurrentPID->log_datalinks != 0)) {
-				cout << "Requirements met to update PID - setting vector busy" << endl;
+				//cout << "Requirements met to update PID - setting vector busy" << endl;
 				ELMSerialPtr->serialWrite((CurrentPID)->getCommand());		// Request PID data if necessary
 				PIDVectorState = busy;
 			}
 			else {
-				cout << "Requirements not net to update PID - moving to next" << endl;
+				//cout << "Requirements not net to update PID - moving to next" << endl;
 				CurrentPID++;		// Move on to next PID
 			}
 		}
@@ -778,7 +793,7 @@ void PIDVectorManager (void) {
 		if(PIDVectorState == busy) {								// Read PID response
 			string serialResponse = ELMSerialPtr->serialReadUntil();
 			if(!serialResponse.empty()) {
-				cout << "Data recieved! updating PID" << endl;
+				cout << "Data recieved! updating PID with" << serialResponse << endl;
 				(CurrentPID)->update(serialResponse, loopTime);		
 				if(CurrentPID < PIDs.end()) {
 					CurrentPID++;										// On to the next one

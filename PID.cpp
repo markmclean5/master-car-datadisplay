@@ -227,8 +227,8 @@ float PID::getReadoutUpdateRate(void)
 }
 
 void PID::update (string serialData, uint64_t updateTime) {
-	cout << "PID update called for: " << getCommand() << endl;
-	cout << "  With " << serialData << endl;
+	//cout << "PID update called for: " << getCommand() << endl;
+	//cout << "  With " << serialData << endl;
 	currentTime = updateTime;
 	uint64_t timeDelta = currentTime - lastTime;
 	lastTime = currentTime;
@@ -243,21 +243,21 @@ void PID::update (string serialData, uint64_t updateTime) {
 		if(found != std::string::npos) {
 			float value = 0;
 			string dataByteString = serialData.substr(found+4, numDataBytes*2);
-			cout << "Data Byte String - " << dataByteString << endl;
-			cout << "num data bytes: " << numDataBytes << endl;
+			//cout << "Data Byte String - " << dataByteString << endl;
+			//cout << "num data bytes: " << numDataBytes << endl;
 			
 
 			if(type.compare("value") == 0) {
 				for(int i=0;i<numDataBytes;i++) {
-					cout << "byte gain " << byteGain[i] << endl;
-					cout << "byte offset " << byteOffset[i] << endl;
-					cout << " substring " <<  dataByteString.substr(2*i, 2).c_str() << endl;
-					cout << "stroutl " << strtoul(dataByteString.substr(2*i, 2).c_str(), NULL, 16) << endl;
+					//cout << "byte gain " << byteGain[i] << endl;
+					//cout << "byte offset " << byteOffset[i] << endl;
+					//cout << " substring " <<  dataByteString.substr(2*i, 2).c_str() << endl;
+					//cout << "stroutl " << strtoul(dataByteString.substr(2*i, 2).c_str(), NULL, 16) << endl;
 					value += (byteGain[i]*strtoul(dataByteString.substr(2*i, 2).c_str(), NULL, 16) + byteOffset[i]);
-					cout << "value before total " << value << endl;
+					//cout << "value before total " << value << endl;
 				}
-				cout << "TotalGain " << TotalGain << endl;
-				cout << "TotalOffset " << TotalOffset << endl;
+				//cout << "TotalGain " << TotalGain << endl;
+				//cout << "TotalOffset " << TotalOffset << endl;
 				value = (value*TotalGain) + TotalOffset;
 				cout << " Value calculated to be: " << value <<endl;
 				// Now find out which range the  value belongs to
@@ -266,9 +266,9 @@ void PID::update (string serialData, uint64_t updateTime) {
 				while(!rangeFound) {
 					if(range==numRanges) break;
 					if(debug) {
-						cout << "Checking if data fits within range # " << range+1 << endl;
-						cout << "Range start: " << rangeStart[range] << endl;
-						cout << "Range stop: " << rangeStop[range] << endl;
+						//cout << "Checking if data fits within range # " << range+1 << endl;
+						//cout << "Range start: " << rangeStart[range] << endl;
+						//cout << "Range stop: " << rangeStop[range] << endl;
 					}	
 					if(((value>=rangeStart[range]) && (value<rangeStop[range])) ||
 						((value>=rangeStop[range]) && (value<rangeStart[range]))) {
@@ -281,8 +281,8 @@ void PID::update (string serialData, uint64_t updateTime) {
 				}
 				if(rangeFound==true) {
 					value = value * rangeScaling[currentRange-1];	// Apply scaling of current range
-					if(debug) cout << "Value scaled to range: " << value <<endl;
-					if(debug) cout << "Renge units: " << EngUnits[currentRange-1] << endl;
+					//if(debug) cout << "Value scaled to range: " << value <<endl;
+					//if(debug) cout << "Renge units: " << EngUnits[currentRange-1] << endl;
 					float* currentSimpleMAData = simpleMAData[currentRange-1];
 					float* currentWeightedMAData = weightedMAData[currentRange-1];
 					// If the range has changed this time around, reset MA data to current value
