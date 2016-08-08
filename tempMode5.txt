@@ -1,0 +1,85 @@
+		/*
+		//////////////////////////////////////
+		// Mode 5 - PID Support Check
+		//////////////////////////////////////
+		if(ModeMenu.isButtonSelected("m5")) {
+			Menu PIDSupportMenu(width/6, height/2, width/3 - 20, 360, "PIDSupport");
+			TextView PIDList(width/2, height/2, width/3-20, 360, "PIDList");
+
+			Menu SupportedPIDMenu(width - width/6, height/2, width/3 - 20, 360, "SupportedPIDMenu");
+			
+			vector<PID> SupportPIDs;
+			vector<PID> SupportedPIDs;
+
+			
+			
+			while(1) {
+				loopTime = bcm2835_st_read();
+				loopTouch = threadTouch;
+				vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);
+				ModeMenu.update(&loopTouch);
+				SupportedPIDMenu.update(&loopTouch);
+
+				PIDSupportMenu.update(&loopTouch);
+				string menuButton = PIDSupportMenu.getPressedButtonName();
+				if(!menuButton.empty()) {
+					PIDSupportMenu.selectButton(menuButton);
+				}
+
+				string pressedBtn = PIDSupportMenu.getPressedButtonName();
+				if(!pressedBtn.empty()) {
+
+				//if(!PIDSupportMenu.getSelectedButtonName().empty() && SupportPIDs.size() == 0) {
+					cout << "requesting supported pids - " << pressedBtn << endl;
+					SupportPIDs.emplace_back(pressedBtn);
+
+
+					string simResponse = pressedBtn;
+					simResponse[0] = '4';
+					simResponse.append(" FF FF FF FF");
+
+					SupportPIDs.back().update(simResponse, loopTime);
+
+					for(int i = 0; i < SupportPIDs.back().getNumBits(); i++) {
+						cout << i << " - Name "<< SupportPIDs.back().getBitPositionName(i) << " - State " << SupportPIDs.back().getBitPositionState(i) << endl;
+						if(SupportPIDs.back().getBitPositionValue(i)) SupportedPIDMenu.addItem(SupportPIDs.back().getBitPositionName(i), SupportPIDs.back().getBitPositionName(i));
+					}
+				}
+					
+				PIDList.update();
+
+
+
+				
+				if(ModeMenu.isButtonPressed("m1")) {
+					ModeMenu.selectButton("m1");
+					break;
+				}
+				if(ModeMenu.isButtonPressed("m2")) {
+					ModeMenu.selectButton("m2");
+					break;
+				}
+				if(ModeMenu.isButtonPressed("m3")) {
+					ModeMenu.selectButton("m3");
+					break;
+				}
+				if(ModeMenu.isButtonPressed("m4")) {
+					ModeMenu.selectButton("m4");
+					break;
+				}
+				if(ModeMenu.isButtonPressed("m6")) {
+					ModeMenu.selectButton("m6");
+					break;
+				}
+				
+				
+				
+				End();
+			}
+
+		}
+			
+		// Write screen buffer to screen
+		End();
+
+	*/

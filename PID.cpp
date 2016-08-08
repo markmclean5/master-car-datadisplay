@@ -352,7 +352,7 @@ string PID::getBitNameState(string name) {
 	return state;
 }
 bool PID::getBitPositionValue(int pos) {
-	return ((bitValue >> (31-pos) ) & 1);
+	return ((bitValue >> (31-pos) ) &  1);
 }
 string PID::getBitPositionState(int pos) {
 	if(getBitPositionValue(pos))

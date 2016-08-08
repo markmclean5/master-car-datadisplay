@@ -108,7 +108,16 @@ float gray[] = {0.43,0.43,0.43,1};
 float sendcolor[] = {1.0, 0.4, 0.4, 1.0};
 float receivecolor[] = {0.4, 0.69, 1.0, 1.0};
 
-// main()
+
+
+
+
+
+/**********************************************************************************************************************************************************
+																														M A I N    E X E C U T I O N    L O O P
+**********************************************************************************************************************************************************/
+
+
 int main() {
 	int width, height;						// display width & height
 	setupGraphics(&width, &height);			// Initialize display
@@ -181,6 +190,23 @@ int main() {
 	ParmStatus 				VINStat 						= unknown;
 	
 	uint64_t lastLoopTime = 0;
+	
+	
+	// PID support 
+
+	TextView PIDList(width/2, height/2, width/3-20, 360, "PIDList");
+			
+	vector<PID> SupportPIDs;			// PID support queries
+	
+	ParmStatus PIDSupport_01_20 = unknown;
+	ParmStatus PIDSupport_21_40 = unknown;
+	ParmStatus PIDSupport_41_60 = unknown;
+	ParmStatus PIDSupport_61_80 = unknown;
+	ParmStatus PIDSupport_81_A0 = unknown;
+	ParmStatus PIDSupport_A1_C0 = unknown;
+	ParmStatus PIDSupport_C1_E0 = unknown;
+	
+	
 
 	// Log Mode
 
@@ -235,9 +261,13 @@ int main() {
      string logFileName;
 
 
-	//////////////////////////////////////
-	// Main Execution Loop
-	///////////////////////////////////////
+	 
+	 
+	 
+/**********************************************************************************************************************************************************
+																														M A I N    W H I L E    L O O P
+**********************************************************************************************************************************************************/
+	
 	while(1) {
 		
 		// **** Global Loop  Parameters ****//
@@ -363,16 +393,20 @@ int main() {
 		ELMConnectionStatusButton.update();
 		ECUConnectionStatusButton.update();
 		
-		if(currentMode == developmentMode) {
-			// Development mode code
-		}
+		
+		
 
+		
+		
 		PIDVectorManager();
 		if (PIDVectorState == complete) PIDVectorState = active;	// Loop PID vector upon update completion
 		
-		//////////////////////////////////////
-		// Mode 1 - DASHBOARD
-		//////////////////////////////////////
+		
+		
+		
+		/******************************************************************************************
+		Mode 1 - DASHBOARD
+		******************************************************************************************/
 		// Dashboard mode run-time
 		if(currentMode == dashboardMode) {
 			for (std::vector<Button>::iterator it = DASHBOARD_HotButtons.begin(); it != DASHBOARD_HotButtons.end(); it++) {		// Update all hot buttons
@@ -393,20 +427,24 @@ int main() {
 			}
 			
 			DisplayObjectManager(DASHBOARD_HotButtons, DASHBOARD_Gauges, PIDs, DASHBOARD_Menus);								// Run DisplayObjectManager (current page dashboard hotbuttons, display objects, and PIDs)		
-		}
+		} // End Mode 1
 
 		
-		//////////////////////////////////////
-		// Mode 2 - PLOT
-		//////////////////////////////////////
+		
+		/******************************************************************************************
+		Mode 2 - PLOT
+		******************************************************************************************/
 		// Plot mode run-time
 		if(currentMode == plotMode) {
 			
-		}
+		} // End Mode 2
 
-		//////////////////////////////////////
-		// Mode 3 - LOG
-		//////////////////////////////////////
+		
+		
+		
+		/******************************************************************************************
+		Mode 3 - LOG
+		******************************************************************************************/
 		// Plot mode run-time
 		if(currentMode == logMode) {
 			NewLogButton.update();
@@ -460,7 +498,41 @@ int main() {
 
 				}
 			}
-		}
+		} // End Mode 3
+		
+		
+		
+		/******************************************************************************************
+		Mode 8 - DEVELOPMENT
+		******************************************************************************************/
+		
+		if(currentMode == developmentMode) {
+
+			if(ECUStatus == connected && PIDSupport_01_20 == unknown) {
+				SupportPIDs.emplace_back("0100");
+				ELMSerial.serialWrite(SupportPIDs.back().getCommand());
+				PIDSupport_01_20 = requested;
+			}
+			if(PIDSupport_01_20 == requested) {
+				string resp = ELMSerial.serialReadUntil();
+				if(!resp.empty()) {
+					SupportPIDs.back().update(resp, loopTime);
+					PIDSupport_01_20 = known;
+					
+					for(int i = 0; i < SupportPIDs.back().getNumBits(); i++) {
+						cout << i << " - Name "<< SupportPIDs.back().getBitPositionName(i) << " - State " << SupportPIDs.back().getBitPositionState(i) << endl;
+						if(SupportPIDs.back().getBitPositionValue(i)) {
+							PIDList.addNewLine(SupportPIDs.back().getBitPositionName(i));
+						}
+					}
+					
+				}
+						
+			}
+			
+			PIDList.update();
+
+		} // End Mode 8
 
 
 
@@ -472,93 +544,22 @@ int main() {
 
 
 		
-		/*
-		//////////////////////////////////////
-		// Mode 5 - PID Support Check
-		//////////////////////////////////////
-		if(ModeMenu.isButtonSelected("m5")) {
-			Menu PIDSupportMenu(width/6, height/2, width/3 - 20, 360, "PIDSupport");
-			TextView PIDList(width/2, height/2, width/3-20, 360, "PIDList");
 
-			Menu SupportedPIDMenu(width - width/6, height/2, width/3 - 20, 360, "SupportedPIDMenu");
-			
-			vector<PID> SupportPIDs;
-			vector<PID> SupportedPIDs;
-
-			
-			
-			while(1) {
-				loopTime = bcm2835_st_read();
-				loopTouch = threadTouch;
-				vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);
-				ModeMenu.update(&loopTouch);
-				SupportedPIDMenu.update(&loopTouch);
-
-				PIDSupportMenu.update(&loopTouch);
-				string menuButton = PIDSupportMenu.getPressedButtonName();
-				if(!menuButton.empty()) {
-					PIDSupportMenu.selectButton(menuButton);
-				}
-
-				string pressedBtn = PIDSupportMenu.getPressedButtonName();
-				if(!pressedBtn.empty()) {
-
-				//if(!PIDSupportMenu.getSelectedButtonName().empty() && SupportPIDs.size() == 0) {
-					cout << "requesting supported pids - " << pressedBtn << endl;
-					SupportPIDs.emplace_back(pressedBtn);
-
-
-					string simResponse = pressedBtn;
-					simResponse[0] = '4';
-					simResponse.append(" FF FF FF FF");
-
-					SupportPIDs.back().update(simResponse, loopTime);
-
-					for(int i = 0; i < SupportPIDs.back().getNumBits(); i++) {
-						cout << i << " - Name "<< SupportPIDs.back().getBitPositionName(i) << " - State " << SupportPIDs.back().getBitPositionState(i) << endl;
-						if(SupportPIDs.back().getBitPositionValue(i)) SupportedPIDMenu.addItem(SupportPIDs.back().getBitPositionName(i), SupportPIDs.back().getBitPositionName(i));
-					}
-				}
-					
-				PIDList.update();
+	}  // E N D    M A I N    W H I L E
+}  // E N D    M A I N    L O O P
 
 
 
-				
-				if(ModeMenu.isButtonPressed("m1")) {
-					ModeMenu.selectButton("m1");
-					break;
-				}
-				if(ModeMenu.isButtonPressed("m2")) {
-					ModeMenu.selectButton("m2");
-					break;
-				}
-				if(ModeMenu.isButtonPressed("m3")) {
-					ModeMenu.selectButton("m3");
-					break;
-				}
-				if(ModeMenu.isButtonPressed("m4")) {
-					ModeMenu.selectButton("m4");
-					break;
-				}
-				if(ModeMenu.isButtonPressed("m6")) {
-					ModeMenu.selectButton("m6");
-					break;
-				}
-				
-				
-				
-				End();
-			}
 
-		}
-			
-		// Write screen buffer to screen
-		End();
 
-	*/
-	}
-}
+
+
+
+
+
+/**********************************************************************************************************************************************************
+																								COMPONENT FUNCTIONS {TO BECOME SEPERATE CPP FILES}
+**********************************************************************************************************************************************************/
 
 
 // PID Vector managment function: Handles update of PID vectors based on current application mode

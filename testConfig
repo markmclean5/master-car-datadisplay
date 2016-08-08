@@ -500,7 +500,7 @@ PIDList {
 	textColor = ["1.0", "1.0", "1.0", "1.0"];
 	numLines = "15";
 	pressDebounce = "500";
-}
+};
 
 PIDSupport {
 	name = "PIDSupportMenu";
