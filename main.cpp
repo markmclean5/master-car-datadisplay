@@ -141,7 +141,8 @@ int main() {
 	DASHBOARD_Gauges.reserve(4);
 
 	// Draw background wallpaper from JPEG, save as VGImage for efficient re-draw
-	Image(0, 0, 800, 480, "/home/pi/master-car-datadisplay/wallpaper.jpg");
+	//Image(0, 0, 800, 480, "/home/pi/master-car-datadisplay/wallpaper.jpg");
+	Image(0, 0, 800, 480, "/home/pi/master-car-datadisplay/pats.jpg");
 	BackgroundImage = vgCreateImage(VG_sABGR_8888, 800, 480, VG_IMAGE_QUALITY_BETTER);
 	vgGetPixels(BackgroundImage, 0, 0, 0, 0, 800, 480);
 	
@@ -820,7 +821,7 @@ void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& G
 
 
 
-}
+}  // E N D DisplayObjectManager
 
 
 

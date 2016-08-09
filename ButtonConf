@@ -1,0 +1,199 @@
+
+
+ConnectionButton {
+	name = "ConnectionButton";
+	cornerRadius = "0";
+	borderWidth = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "C";
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	defaultText = "--------------";
+	enableValue = "false";
+	pressDebounce = "500";
+	selectable = "false";
+};
+
+
+FramerateButton {
+	name = "FramerateButton";
+	cornerRadius = "0";
+	borderWidth = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "B";
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	defaultText = "Hz";
+	enableValue = "true";
+	valueAlign = "T";
+	valueColor = ["1.0", "1.0", "1.0", "1.0"];
+	valueRefreshRate = "5";
+	valueDecPlaces = "1";
+	pressDebounce = "500";
+	selectable = "false";
+};
+
+NewLogButton {
+	name = "NewLogButton";
+	cornerRadius = "10";
+	borderWidth = "1";
+	borderColor = ["0.43", "0.43", "0.43", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "C";
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	defaultText = "New File";
+	enableValue = "false";
+	pressDebounce = "500";
+	selectable = "false";
+};
+
+
+
+LogStateControlButton {
+	name = "LogStateControlButton";
+	cornerRadius = "10";
+	borderWidth = "1";
+	borderColor = ["0.43", "0.43", "0.43", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "C";
+	textColor = ["0.0", "1.0", "0.0", "1.0"];
+	defaultText = "Start";
+	enableValue = "false";
+	pressDebounce = "500";
+	selectable = "true";
+	selectedBackgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	selectedBorderColor = ["1.0", "0.0", "0.0", "1.0"];
+	selectedBorderWidth = "3";
+	selectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
+};
+
+PIDCountButton {
+	name = "PIDCountButton";
+	cornerRadius = "0";
+	borderWidth = "1";
+	borderColor = ["0.43", "0.43", "0.43", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "false";
+	enableValue = "true";
+	valueAlign = "C";
+	valueColor = ["1.0", "1.0", "1.0", "1.0"];
+	valueRefreshRate = "5";
+	valueDecPlaces = "0";
+	pressDebounce = "500";
+	selectable = "false";
+};
+
+PIDUpdateRateButton {
+	name = "PIDUpdateRateButton";
+	cornerRadius = "0";
+	borderWidth = "1";
+	borderColor = ["0.43", "0.43", "0.43", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "B";
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	defaultText = "Hz";
+	enableValue = "true";
+	valueAlign = "T";
+	valueColor = ["1.0", "1.0", "1.0", "1.0"];
+	valueRefreshRate = "5";
+	valueDecPlaces = "0";
+	pressDebounce = "500";
+	selectable = "false";
+};
+
+
+
+
+
+hotBtn1 {
+	name = "hotButton1";
+	cornerRadius = "0";
+	borderWidth = "0";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "C";
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	defaultText = "+";
+	enableValue = "false";
+	pressDebounce = "500";
+	selectable = "true";
+	selectedBackgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	selectedBorderColor = ["1.0", "0.0", "0.0", "1.0"];
+	selectedBorderWidth = "3";
+	selectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
+};
+hotBtn2 {
+	name = "hotButton2";
+	cornerRadius = "0";
+	borderWidth = "0";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "C";
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	defaultText = "+";
+	enableValue = "false";
+	pressDebounce = "500";
+	selectable = "true";
+	selectedBackgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	selectedBorderColor = ["1.0", "0.0", "0.0", "1.0"];
+	selectedBorderWidth = "3";
+	selectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
+};
+
+hotBtn3 {
+	name = "hotButton2";
+	cornerRadius = "0";
+	borderWidth = "0";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "C";
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	defaultText = "+";
+	enableValue = "false";
+	pressDebounce = "500";
+	selectable = "true";
+	selectedBackgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	selectedBorderColor = ["1.0", "0.0", "0.0", "1.0"];
+	selectedBorderWidth = "3";
+	selectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
+};
+
+
+ConnectButton {
+	name = "connectBtn";
+	cornerRadius = "0";
+	borderWidth = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "C";
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	defaultText = "Connect";
+	enableValue = "false";
+	pressDebounce = "500";
+	selectable = "true";
+	selectedBackgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	selectedBorderColor = ["1.0", "0.0", "0.0", "1.0"];
+	selectedBorderWidth = "3";
+	selectedTextColor = ["1.0", "0.0", "0.0", "1.0"];
+};
+
+ConnectView {
+	cornerRadius = "10";
+	borderWidth = "2";
+	borderColor = ["0.43", "0.43", "0.43", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	numLines = "30";
+	pressDebounce = "500";
+};
+
+

@@ -35,7 +35,7 @@ void TextView::configure(string ident) {
 	setlocale(LC_ALL, "");
 	Configuration * cfg = Configuration::create();
 	try {
-		cfg->parse("/home/pi/master-car-datadisplay/testConfig");
+		cfg->parse("/home/pi/master-car-datadisplay/TextViewConf");
 		string textViewName = ident;
 		cornerRadius = parseInt(cfg, textViewName, "cornerRadius");
 		borderWidth = parseInt(cfg, textViewName, "borderWidth");

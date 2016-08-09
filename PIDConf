@@ -106,7 +106,7 @@
 	D0_0state = "false";
 	D0_1state = "true";
 
-}
+};
 
 0120 {
 	fullName = "Supported PIDs 0121 - 0140";
@@ -214,7 +214,39 @@
 	D0_0state = "false";
 	D0_1state = "true";
 
-}
+};
+
+0103 {
+	fullName = "Fuel System Status";
+	shortName = "Fuel Sts";
+	type = "enum";
+	numDataBytes = "2";
+	command = "01031";
+	
+	num_enums = "2";
+
+	
+	enum1{
+	name = "Fuel Sys 1 Sts";
+	start_bit = 0;
+	stop_bit = 7;
+	num_values = 
+	val1 = "1";
+	val1_state = "Open loop - insufficient engine temp";
+	
+	val2 = "2";
+	val2_state = "Closed loop - using O2 sensor"
+	
+	.
+	.
+	.
+	
+	
+	};
+	
+	
+
+};
 
 
 0104 {
@@ -244,8 +276,11 @@
 		simpleMALag = "1";
 		weightedMALag = "5";
 		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
-	}
-}
+	};
+};
+
+
+
 0105 {
 	fullName = "Engine Coolant Temperature";
 	shortName = "ECT";
@@ -273,8 +308,8 @@
 		simpleMALag = "1";
 		weightedMALag = "5";
 		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
-	}
-}
+	};
+};
 
 0106 {
 	fullName = "Short Term Fuel Pct Trim - Bank 1";
@@ -303,8 +338,8 @@
 		simpleMALag = "1";
 		weightedMALag = "5";
 		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
-	}
-}
+	};
+};
 
 0107 {
 	fullName = "Long Term Fuel Pct Trim - Bank 1";
@@ -333,8 +368,8 @@
 		simpleMALag = "1";
 		weightedMALag = "5";
 		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
-	}
-}
+	};
+};
 
 0108 {
 	fullName = "Short Term Fuel Pct Trim - Bank 2";
@@ -363,8 +398,8 @@
 		simpleMALag = "1";
 		weightedMALag = "5";
 		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
-	}
-}
+	};
+};
 
 0109 {
 	fullName = "Long Term Fuel Pct Trim - Bank 2";
@@ -393,8 +428,8 @@
 		simpleMALag = "1";
 		weightedMALag = "5";
 		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
-	}
-}
+	};
+};
 
 010A {
 	fullName = "Fuel Pressure";
@@ -423,8 +458,8 @@
 		simpleMALag = "1";
 		weightedMALag = "5";
 		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
-	}
-}
+	};
+};
 
 010B {
 	fullName = "Intake Manifold Absolute Pressure";
@@ -453,8 +488,8 @@
 		simpleMALag = "1";
 		weightedMALag = "5";
 		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
-	}
-}
+	};
+};
 
 010C {
 	fullName = "Engine RPM";
@@ -483,8 +518,8 @@
 		simpleMALag = "1";
 		weightedMALag = "5";
 		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
-	}
-}
+	};
+};
 
 010D {
 	fullName = "Vehicle Speed";
@@ -513,8 +548,8 @@
 		simpleMALag = "1";
 		weightedMALag = "5";
 		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
-	}
-}
+	};
+};
 
 010E {
 	fullName = "Timing Advance";
@@ -543,8 +578,8 @@
 		simpleMALag = "1";
 		weightedMALag = "5";
 		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
-	}
-}
+	};
+};
 
 010F {
 	fullName = "Intake Air Temperature";
@@ -573,8 +608,8 @@
 		simpleMALag = "1";
 		weightedMALag = "5";
 		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
-	}
-}
+	};
+};
 
 0110 {
 	fullName = "MAF Air Flow Rate";
@@ -603,8 +638,8 @@
 		simpleMALag = "1";
 		weightedMALag = "5";
 		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
-	}
-}
+	};
+};
 
 0111 {
 	fullName = "Throttle Position";
@@ -633,6 +668,6 @@
 		simpleMALag = "1";
 		weightedMALag = "5";
 		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
-	}
-}
+	};
+};
 
