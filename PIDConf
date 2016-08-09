@@ -216,37 +216,34 @@
 
 };
 
-0103 {
-	fullName = "Fuel System Status";
-	shortName = "Fuel Sts";
-	type = "enum";
-	numDataBytes = "2";
-	command = "01031";
+#0103 {
+#	fullName = "Fuel System Status";
+#	shortName = "Fuel Sts";
+#	type = "enum";
+#	numDataBytes = "2";
+#	command = "01031";
 	
-	num_enums = "2";
+#	num_enums = "2";
 
 	
-	enum1{
-	name = "Fuel Sys 1 Sts";
-	start_bit = 0;
-	stop_bit = 7;
-	num_values = 
-	val1 = "1";
-	val1_state = "Open loop - insufficient engine temp";
+#	enum1{
+#	name = "Fuel Sys 1 Sts";
+#	start_bit = "0";
+#	stop_bit = "7";
+#	num_values = ;
+#	val1 = "1";
+#	val1_state = "Open loop - insufficient engine temp";
 	
-	val2 = "2";
-	val2_state = "Closed loop - using O2 sensor"
-	
-	.
-	.
-	.
+#	val2 = "2";
+#	val2_state = "Closed loop - using O2 sensor";
+
 	
 	
-	};
+#	};
 	
 	
 
-};
+# };
 
 
 0104 {

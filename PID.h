@@ -70,6 +70,15 @@ private:	// Class Private properties
 	std::string bit0States[32];
 	std::string bit1States[32];
 	
+	// Enumerated PIDs
+	int numEnums;		// Number of enumerations per PID
+	int* startBits;			// Start bit positions for each enumeration
+	int* stopBits;			// Stop bit positions for each enumeration
+	int* numVals;		// Number of values for each enumeration
+	
+	int** enumVals;				// array of values for each enumeration
+	string ** enumStates;	// array of states for each enumeration
+	
 
 
 
