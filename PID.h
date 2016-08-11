@@ -77,7 +77,7 @@ private:	// Class Private properties
 	int* numVals;		// Number of values for each enumeration
 	
 	int** enumVals;				// array of values for each enumeration
-	string ** enumStates;	// array of states for each enumeration
+	std::string ** enumStates;	// array of states for each enumeration
 	
 
 

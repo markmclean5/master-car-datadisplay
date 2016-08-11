@@ -195,19 +195,13 @@ int main() {
 	
 	// PID support 
 
-	TextView PIDList(width/2, height/2, width/3-20, 360, "PIDList");
+	Menu SupportedPIDMenu(width/2, height/2, width/3-20, 360, "SupportedPIDMenu");
 			
 	vector<PID> SupportPIDs;			// PID support queries
 	
-	ParmStatus PIDSupport_01_20 = unknown;
-	ParmStatus PIDSupport_21_40 = unknown;
-	ParmStatus PIDSupport_41_60 = unknown;
-	ParmStatus PIDSupport_61_80 = unknown;
-	ParmStatus PIDSupport_81_A0 = unknown;
-	ParmStatus PIDSupport_A1_C0 = unknown;
-	ParmStatus PIDSupport_C1_E0 = unknown;
-	
-	
+	ParmStatus PIDSupportRequestStatus = unknown;
+	int currentPIDSupportRequest = 100;
+
 
 	// Log Mode
 
@@ -368,6 +362,55 @@ int main() {
 
 	}
 	
+	// Requestiing PID support from ECU (assuming protocol known)
+	if(ProtocolStat == known && PIDSupportRequestStatus == unknown) {
+		string requestPIDString = "0";
+		requestPIDString.append(std::to_string(currentPIDSupportRequest) );	//"0100" first time around
+		SupportPIDs.emplace_back(requestPIDString);
+		ELMSerial.serialWrite(SupportPIDs.back().getCommand());
+		PIDSupportRequestStatus = requested;
+	}
+	
+	// Waiting on some PID support request response
+	if(PIDSupportRequestStatus == requested) {
+		string resp = ELMSerial.serialReadUntil();
+		if(!resp.empty()) {
+			SupportPIDs.back().update(resp, loopTime);
+		}
+		
+		// Move on to next PID support request
+		if(SupportPIDs.back().getBitPositionValue(31) && currentPIDSupportRequest < 160) {
+			PIDSupportRequestStatus = unknown;
+			currentPIDSupportRequest += 20;
+		}
+		// Or stop here
+		else
+			PIDSupportRequestStatus = known;
+	
+	}
+
+	if(PIDSupportRequestStatus == known) {
+		
+		int numSupportPIDs = SupportPIDs.size();
+		int PIDidx = 0;
+		bool* PIDSupportStates = new bool[numSupportPIDs*31];
+		string* PIDSupportNames = new string[numSupportPIDs*31];		
+		
+		
+		for(std::vector<PID>::iterator it = SupportPIDs.begin(); it != SupportPIDs.end(); it++)  {
+			for(int p = 0; p<31; p++) {
+				PIDSupportStates[PIDidx] = (it)->getBitPositionValue(p);
+				PIDSupportNames[PIDidx] = (it)->getBitPositionName(p);
+					
+				if(PIDSupportStates[PIDidx])
+				SupportedPIDMenu.addItem(PIDSupportNames[PIDidx], PIDSupportNames[PIDidx]);
+				PIDidx++;
+			}
+		}
+	}
+	
+	
+	
 	
 		
 		// TODO: decide if this needs touch and should update the menu - if so remove double update
@@ -509,30 +552,10 @@ int main() {
 		
 		if(currentMode == developmentMode) {
 
-			if(ECUStatus == connected && PIDSupport_01_20 == unknown) {
-				SupportPIDs.emplace_back("0100");
-				ELMSerial.serialWrite(SupportPIDs.back().getCommand());
-				PIDSupport_01_20 = requested;
-			}
-			if(PIDSupport_01_20 == requested) {
-				string resp = ELMSerial.serialReadUntil();
-				if(!resp.empty()) {
-					SupportPIDs.back().update(resp, loopTime);
-					PIDSupport_01_20 = known;
-					
-					for(int i = 0; i < SupportPIDs.back().getNumBits(); i++) {
-						cout << i << " - Name "<< SupportPIDs.back().getBitPositionName(i) << " - State " << SupportPIDs.back().getBitPositionState(i) << endl;
-						if(SupportPIDs.back().getBitPositionValue(i)) {
-							PIDList.addNewLine(SupportPIDs.back().getBitPositionName(i));
-						}
-					}
-					
-				}
-						
-			}
-			
-			PIDList.update();
 
+		SupportedPIDMenu.update(&loopTouch);
+		
+		
 		} // End Mode 8
 
 

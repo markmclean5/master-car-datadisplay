@@ -562,6 +562,7 @@ string Menu::getSelectedButtonName(void) {
 }
 
 
+/* Adds an item to a dynamic menu */
 void Menu::addItem(string name, string text) {
 	cout << "add menu item - initial items: " << totalItems << endl;
 	buttonNames[totalItems] = name;
