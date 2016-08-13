@@ -107,7 +107,7 @@ void PID::configure(string ident) {
 					bit0States[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_0state");
 					cout << "  0 state = " << bit0States[messageBit] << endl;
 					bit1States[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_1state");
-					cout << "  1 state = " << bit0States[messageBit] << endl;
+					cout << "  1 state = " << bit1States[messageBit] << endl;
 					messageBit++;
 				}
 			}
@@ -227,8 +227,8 @@ float PID::getReadoutUpdateRate(void)
 }
 
 void PID::update (string serialData, uint64_t updateTime) {
-	//cout << "PID update called for: " << getCommand() << endl;
-	//cout << "  With " << serialData << endl;
+	cout << "PID update called for: " << getCommand() << endl;
+	cout << "  With " << serialData << endl;
 	currentTime = updateTime;
 	uint64_t timeDelta = currentTime - lastTime;
 	lastTime = currentTime;

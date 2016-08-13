@@ -201,6 +201,8 @@ int main() {
 	
 	ParmStatus PIDSupportRequestStatus = unknown;
 	int currentPIDSupportRequest = 100;
+	
+	bool PIDSupportRequestsComplete = false;
 
 
 	// Log Mode
@@ -376,21 +378,22 @@ int main() {
 		string resp = ELMSerial.serialReadUntil();
 		if(!resp.empty()) {
 			SupportPIDs.back().update(resp, loopTime);
-		}
+			
+			cout << " we think 0120 support state is here: " << SupportPIDs.back().getBitPositionName(31) << endl;
 		
-		// Move on to next PID support request
-		if(SupportPIDs.back().getBitPositionValue(31) && currentPIDSupportRequest < 160) {
-			PIDSupportRequestStatus = unknown;
-			currentPIDSupportRequest += 20;
+			// Move on to next PID support request
+			if(SupportPIDs.back().getBitPositionValue(31) && currentPIDSupportRequest < 160) {
+				PIDSupportRequestStatus = unknown;
+				currentPIDSupportRequest += 20;
+			}
+			// Or stop here
+			else
+				PIDSupportRequestStatus = known;
 		}
-		// Or stop here
-		else
-			PIDSupportRequestStatus = known;
-	
 	}
 
-	if(PIDSupportRequestStatus == known) {
-		
+	if(PIDSupportRequestStatus == known && !PIDSupportRequestsComplete) {
+		PIDSupportRequestsComplete 	= true;
 		int numSupportPIDs = SupportPIDs.size();
 		int PIDidx = 0;
 		bool* PIDSupportStates = new bool[numSupportPIDs*31];
@@ -402,9 +405,10 @@ int main() {
 				PIDSupportStates[PIDidx] = (it)->getBitPositionValue(p);
 				PIDSupportNames[PIDidx] = (it)->getBitPositionName(p);
 					
-				if(PIDSupportStates[PIDidx])
-				cout << "Supported PID " << PIDSupportNames[PIDidx] << endl;
-				SupportedPIDMenu.addItem(PIDSupportNames[PIDidx], PIDSupportNames[PIDidx]);
+				if(PIDSupportStates[PIDidx]) {
+					cout << "Supported PID " << PIDSupportNames[PIDidx] << endl;
+					SupportedPIDMenu.addItem(PIDSupportNames[PIDidx], PIDSupportNames[PIDidx]);
+				}
 				PIDidx++;
 			}
 		}
