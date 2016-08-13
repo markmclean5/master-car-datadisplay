@@ -267,7 +267,7 @@ void Menu::configure(string ident) {
 		totalItems = parseInt(cfg, menuName, "totalItems");
 		if(totalItems == 0) {
 			dynamic = true;
-			totalItems = 100;	// Arbitrary max value for dynamic menu
+			totalItems = 200;	// Arbitrary max value for dynamic menu
 		}
 		// Scrollable configuration
 		scrollable = parseBool(cfg, menuName, "scrollable");

@@ -398,11 +398,12 @@ int main() {
 		
 		
 		for(std::vector<PID>::iterator it = SupportPIDs.begin(); it != SupportPIDs.end(); it++)  {
-			for(int p = 0; p<31; p++) {
+			for(int p = 0; p<30; p++) {
 				PIDSupportStates[PIDidx] = (it)->getBitPositionValue(p);
 				PIDSupportNames[PIDidx] = (it)->getBitPositionName(p);
 					
 				if(PIDSupportStates[PIDidx])
+				cout << "Supported PID " << PIDSupportNames[PIDidx] << endl;
 				SupportedPIDMenu.addItem(PIDSupportNames[PIDidx], PIDSupportNames[PIDidx]);
 				PIDidx++;
 			}
