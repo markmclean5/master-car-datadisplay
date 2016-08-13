@@ -174,6 +174,7 @@ int main() {
 	
 	Button ELMConnectionStatusButton(200, 18, 100, 35, "ConnectionButton");
 	Button ECUConnectionStatusButton(350, 18, 160, 35, "ConnectionButton");
+	Button NumSuportedPIDsButton(350+90, 18, 50, 35, "FramerateButton");
 	
 	// ELM connection and ECU connection status
 	ConnectionStatus 	ELMStatus 					= disconnected;
@@ -397,21 +398,28 @@ int main() {
 		int numSupportPIDs = SupportPIDs.size();
 		int PIDidx = 0;
 		bool* PIDSupportStates = new bool[numSupportPIDs*31];
-		string* PIDSupportNames = new string[numSupportPIDs*31];		
+		string* PIDSupportNames = new string[numSupportPIDs*31];
+		string* PIDSupportLabels = new string[numSupportPIDs*31];
+		
+		int numSupportedPIDs = 0;
 		
 		
 		for(std::vector<PID>::iterator it = SupportPIDs.begin(); it != SupportPIDs.end(); it++)  {
 			for(int p = 0; p<30; p++) {
 				PIDSupportStates[PIDidx] = (it)->getBitPositionValue(p);
 				PIDSupportNames[PIDidx] = (it)->getBitPositionName(p);
+				PIDSupportLabels[PIDidx] = (it)->getBitPositionLabel(p);
 					
 				if(PIDSupportStates[PIDidx]) {
 					cout << "Supported PID " << PIDSupportNames[PIDidx] << endl;
-					SupportedPIDMenu.addItem(PIDSupportNames[PIDidx], PIDSupportNames[PIDidx]);
+					SupportedPIDMenu.addItem(PIDSupportNames[PIDidx], PIDSupportLabels[PIDidx]);
+					numSupportedPIDs++;
 				}
 				PIDidx++;
 			}
 		}
+		//NumSuportedPIDsButton
+		NumSuportedPIDsButton.setValue(numSupportedPIDs);
 	}
 	
 	
@@ -441,6 +449,9 @@ int main() {
 		// Connection status button
 		ELMConnectionStatusButton.update();
 		ECUConnectionStatusButton.update();
+		
+		//NumSuportedPIDsButton
+		NumSuportedPIDsButton.update();
 		
 		
 		

@@ -69,6 +69,7 @@ private:	// Class Private properties
 	std::string bitNames[32];
 	std::string bit0States[32];
 	std::string bit1States[32];
+	std::string bitLabels[32];
 	
 	// Enumerated PIDs
 	int numEnums;		// Number of enumerations per PID
@@ -132,6 +133,7 @@ public:		// Class members
 	bool getBitPositionValue(int);
 	std::string getBitPositionState(int);
 	std::string getBitPositionName(int);
+	std::string getBitPositionLabel(int);
 	int getNumBits(void);
 
 	// Datalinks - count number of elements for each mode which rely on data from this PID

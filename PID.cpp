@@ -104,6 +104,8 @@ void PID::configure(string ident) {
 					cout << "Parsing " << byt+to_string(bit) << endl;
 					bitNames[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_name");
 					cout << "  Name = " << bitNames[messageBit] << endl;
+					bitLabels[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_label");
+					cout << "  Label = " << bitLabels[messageBit] << endl;
 					bit0States[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_0state");
 					cout << "  0 state = " << bit0States[messageBit] << endl;
 					bit1States[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_1state");
@@ -118,6 +120,8 @@ void PID::configure(string ident) {
 					cout << "Parsing " << byt+to_string(bit) << endl;
 					bitNames[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_name");
 					cout << "  Name = " << bitNames[messageBit] << endl;
+					bitLabels[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_label");
+					cout << "  Label = " << bitLabels[messageBit] << endl;
 					bit0States[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_0state");
 					cout << "  0 state = " << bit0States[messageBit] << endl;
 					bit1States[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_1state");
@@ -132,6 +136,8 @@ void PID::configure(string ident) {
 					cout << "Parsing " << byt+to_string(bit) << endl;
 					bitNames[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_name");
 					cout << "  Name = " << bitNames[messageBit] << endl;
+					bitLabels[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_label");
+					cout << "  Label = " << bitLabels[messageBit] << endl;
 					bit0States[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_0state");
 					cout << "  0 state = " << bit0States[messageBit] << endl;
 					bit1States[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_1state");
@@ -146,6 +152,8 @@ void PID::configure(string ident) {
 					cout << "Parsing " << byt+to_string(bit) << endl;
 					bitNames[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_name");
 					cout << "  Name = " << bitNames[messageBit] << endl;
+					bitLabels[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_label");
+					cout << "  Label = " << bitLabels[messageBit] << endl;
 					bit0States[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_0state");
 					cout << "  0 state = " << bit0States[messageBit] << endl;
 					bit1States[messageBit] = parseString(cfg, PIDName, byt+to_string(bit)+"_1state");
@@ -364,6 +372,11 @@ string PID::getBitPositionState(int pos) {
 string PID::getBitPositionName(int pos) {
 	return bitNames[pos];
 }
+
+string PID::getBitPositionLabel(int pos) {
+	return bitLabels[pos];
+}
+
  
 int PID::getNumBits(void) {
 	return numDataBytes*8;
