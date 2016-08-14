@@ -4,6 +4,11 @@
 #include "TouchableObject.h"
 #include "DisplayableObject.h"
 
+#include "VG/openvg.h"		//
+#include "VG/vgu.h"			//
+#include "../openvg/fontinfo.h"	// OpenVG
+#include "../openvg/shapes.h"			//
+
 class Gauge: public TouchableObject, public DisplayableObject{
 private:
 	// Gauge itself

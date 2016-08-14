@@ -23,7 +23,7 @@
 	A4_0state = "false";
 	A4_1state = "true";
 	A3_name = "0105";
-	A3_name = "Eng Cool Temp";
+	A3_label = "Eng Cool Temp";
 	A3_0state = "false";
 	A3_1state = "true";
 	A2_name = "0106";

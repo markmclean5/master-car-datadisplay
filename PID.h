@@ -1,6 +1,8 @@
 #ifndef PID_H
 #define PID_H
 
+#include <string>
+
 /**************************************************************************************************************
  * PID Class
  * Data class for processing OBD2 PID data received and processing the data into engineering units.

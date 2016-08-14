@@ -1,6 +1,7 @@
 /********************************/
 /*			Menu Class			*/
 /********************************/
+
 #include <iostream>
 #include "VG/openvg.h"		//
 #include "VG/vgu.h"			//
@@ -14,6 +15,7 @@
 #include "parsingUtilities.h"
 #include <memory>
 #include "Menu.h"
+
 using namespace std;
 using namespace config4cpp;
 

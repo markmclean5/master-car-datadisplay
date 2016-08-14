@@ -1,17 +1,15 @@
 /********************************/
 /*			Gauge Class			*/
 /********************************/
+#include "Gauge.h"			// Gauge 
+
 #include <iostream>
-#include "VG/openvg.h"		//
-#include "VG/vgu.h"			//
-#include "../openvg/fontinfo.h"	// OpenVG
-#include "../openvg/shapes.h"			//
 #include <cmath>			// Math (float remainder operation)
 
 #include "EGL/egl.h"		// EGL for pbuffers
 #include "TouchableObject.h"
 #include "DisplayableObject.h"
-#include "Gauge.h"			// Gauge 
+
 #include <stdio.h>
 #include <fstream>
 #include <algorithm>

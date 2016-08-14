@@ -29,6 +29,11 @@ using namespace std;
 #include "PID.h"
 #include <algorithm>
 
+// Managers
+#include "modeManager.h"
+#include "DisplayObjectManager.h"
+#include "PIDVectorManager.h"
+
 
 // Loop time
 uint64_t loopTime;
@@ -37,45 +42,17 @@ int quitState = 0;
 
 VGImage BackgroundImage;
 
-Menu *ModeMenuPtr;
-Serial *ELMSerialPtr;
+//Serial *ELMSerialPtr;														**** REMOVE??
 
 // Prototypes
 void setupGraphics(int*,int*);
-void DisplayObjectManager(std::vector<Button>&, std::vector<Gauge>&, std::vector<PID>&, std::vector<Menu>&);
-void modeManager (touch_t*);
-void PIDVectorManager(void);
-
 
 // PID Vector update rate times
 uint64_t lastPIDVectorUpdateTime = 0;
 uint64_t secondLastPIDVectorUpdateTime = 0;
 
-
-// Mode Management enumeration definition and application mode definitions
-enum ApplicationMode {
-						noMode,
-						dashboardMode,
-						plotMode,
-						logMode,
-						diagnosticMode,
-						informationMode,
-						interfaceMode,
-						settingsMode,
-						developmentMode
-};
-
 ApplicationMode currentMode = noMode;			// Current application mode
 ApplicationMode previousMode = noMode;			// Previous application mode, for mode change detection
-
-// PID Vector management enumeration definition
-enum PIDVectorState {
-						inactive,		// Active PID updates not required
-						active,			// Active, not waiting on response from ELM
-						busy,			// Waiting for response from ELM
-						complete		// All PIDs in vector have been updated
-};
-
 
 // Connection Status Enums
 enum ConnectionStatus { disconnected, connecting, connected };
@@ -90,10 +67,11 @@ vector<Menu> DASHBOARD_Menus;
 
 
 // Everything to do with PIDs
-vector<PID> PIDs;										// PID vector
-std::vector<PID>::iterator CurrentPID = PIDs.begin();	// Set up iterator for PID vector
-PIDVectorState PIDVectorState = inactive;				// PID vector state for processing states
-int numPIDs = 0;										// PID counter for vector size change detection
+vector<PID> PIDs;												// PID vector
+int numPIDs = 0;													// PID counter for vector size change detection
+std::vector<PID>::iterator CurrentPID = PIDs.begin();// Current PID in vector
+PIDVectorState PIDVectorCurrentState = inactive;				// PID vector state for processing states
+									
 
 
 // TODO: Figure out a better way to deal with colors
@@ -107,10 +85,6 @@ float translucentBlack[] = {0,0,0,0.5};
 float gray[] = {0.43,0.43,0.43,1};
 float sendcolor[] = {1.0, 0.4, 0.4, 1.0};
 float receivecolor[] = {0.4, 0.69, 1.0, 1.0};
-
-
-
-
 
 
 /**********************************************************************************************************************************************************
@@ -149,12 +123,11 @@ int main() {
 
 	// Mode Menu: managed by mode menu manager
 	Menu ModeMenu(width/2, height-30, width-20, 50, "ModeMenu");
-	ModeMenuPtr = &ModeMenu;
 	ModeMenu.touchEnable();
 
 	// Serial object for ELM327 interface
 	Serial ELMSerial("/dev/ELM327", B38400);
-	ELMSerialPtr = &ELMSerial;
+	//ELMSerialPtr = &ELMSerial;																			**** REMOVE???
 	ELMSerial.setEndChar('>');
 	ELMSerial.setReadTimeout(5000);		// TODO: Investigate me
 
@@ -178,9 +151,9 @@ int main() {
 	
 	// ELM connection and ECU connection status
 	ConnectionStatus 	ELMStatus 					= disconnected;
-	uint64_t 					ELMConnectStartTime 	= 0;
-	int 							ELMConnectTimeout 	= 1000; 					// Timeout, milliseconds
-	string 						ELMResponseString 	= "";
+	uint64_t ELMConnectStartTime 	= 0;
+	int 		ELMConnectTimeout 	= 1000; 					// Timeout, milliseconds
+	string 	ELMResponseString 	= "";
 	string 						ELMVersion 					= "";
 	ParmStatus 				ELMVersionStat 			= unknown;
 	string 						Protocol 						= "";
@@ -200,8 +173,8 @@ int main() {
 			
 	vector<PID> SupportPIDs;			// PID support queries
 	
-	ParmStatus PIDSupportRequestStatus = unknown;
-	int currentPIDSupportRequest = 100;
+	ParmStatus PIDSupportRequestStatus 	= unknown;
+	int currentPIDSupportRequest 				= 100;
 	
 	bool PIDSupportRequestsComplete = false;
 
@@ -427,7 +400,7 @@ int main() {
 	
 		
 		// TODO: decide if this needs touch and should update the menu - if so remove double update
-		modeManager(&loopTouch);
+		modeManager(&ModeMenu, &loopTouch, &previousMode, &currentMode);
 
 		
 		// Framerate button - need to enable / disable
@@ -453,16 +426,8 @@ int main() {
 		//NumSuportedPIDsButton
 		NumSuportedPIDsButton.update();
 		
-		
-		
-
-		
-		
-		PIDVectorManager();
-		if (PIDVectorState == complete) PIDVectorState = active;	// Loop PID vector upon update completion
-		
-		
-		
+		PIDVectorManager(&PIDVectorCurrentState, PIDs, CurrentPID, &numPIDs, &ELMSerial, &currentMode, &secondLastPIDVectorUpdateTime, &lastPIDVectorUpdateTime, &loopTime);
+		if (PIDVectorCurrentState == complete) PIDVectorCurrentState = active;	// Loop PID vector upon update completion
 		
 		/******************************************************************************************
 		Mode 1 - DASHBOARD
@@ -602,265 +567,7 @@ int main() {
 **********************************************************************************************************************************************************/
 
 
-// PID Vector managment function: Handles update of PID vectors based on current application mode
-void PIDVectorManager (void) {
 
-	if(PIDVectorState == inactive && (PIDs.size() != 0)) {				// Initial vector activation
-		PIDVectorState = active;
-		//cout << "Activating PID Vector" << endl;
-		
-		
-	}
-
-	
-	if(PIDs.size() == 0 && PIDVectorState == active){
-		
-		PIDVectorState = inactive;
-		//cout<< "Dactivating PID Vector" <<endl;
-	}
-
-	
-	if(PIDVectorState != inactive && PIDVectorState != complete) {
-		if(numPIDs != PIDs.size()) {
-			if(PIDVectorState != busy) {								// Reset PID vector beginning iterator if vector modified
-				numPIDs = PIDs.size();		
-				CurrentPID = PIDs.begin();
-				//cout << "PID Vector modified - resetting iterator to start" << endl; 	
-			}
-			else {														// Discard requested data if vector modified
-				string dump = ELMSerialPtr->serialReadUntil();
-				if(!dump.empty()) PIDVectorState = active;
-			}
-		}
-		else if(PIDVectorState == active) {
-			//cout << "PID Vector active" << endl;
-			if(		(currentMode == dashboardMode && CurrentPID->dashboard_datalinks != 0) ||
-					(currentMode == plotMode && CurrentPID->plot_datalinks != 0) ||
-					(currentMode == logMode && CurrentPID->log_datalinks != 0)) {
-				//cout << "Requirements met to update PID - setting vector busy" << endl;
-				ELMSerialPtr->serialWrite((CurrentPID)->getCommand());		// Request PID data if necessary
-				PIDVectorState = busy;
-			}
-			else {
-				//cout << "Requirements not net to update PID - moving to next" << endl;
-				CurrentPID++;		// Move on to next PID
-			}
-		}
-
-			
-		}
-		if(PIDVectorState == busy) {								// Read PID response
-			string serialResponse = ELMSerialPtr->serialReadUntil();
-			if(!serialResponse.empty()) {
-				cout << "Data recieved! updating PID with" << serialResponse << endl;
-				(CurrentPID)->update(serialResponse, loopTime);		
-				if(CurrentPID < PIDs.end()) {
-					CurrentPID++;										// On to the next one
-					PIDVectorState = active;
-			}	
-		}
-		if(CurrentPID == PIDs.end()) {
-			cout << "PID Vector update complete." << endl;
-			PIDVectorState = complete;							// All PIDs updated
-			CurrentPID = PIDs.begin();
-
-			// Capture vector update completion time
-			secondLastPIDVectorUpdateTime = lastPIDVectorUpdateTime;
-			lastPIDVectorUpdateTime = bcm2835_st_read();
-		} 
-					
-	}
-}
-
-
-
-
-
-// Mode management function
-void modeManager (touch_t* menuTouch) {
-	// Default mode upon initialization
-	if(currentMode == noMode) {
-		currentMode = dashboardMode;
-		ModeMenuPtr->selectButton("dashboard");
-	}
-	ModeMenuPtr->update(menuTouch);
-	string btnPressedString = ModeMenuPtr->getPressedButtonName();
-	string prevModeString = ModeMenuPtr->getSelectedButtonName();
-
-	// Change modes
-	if(!btnPressedString.empty() && btnPressedString.compare(prevModeString) != 0) {
-		//previousMode = currentMode;
-		ModeMenuPtr->selectButton(btnPressedString);
-		if(ModeMenuPtr->isButtonSelected("dashboard")) currentMode = dashboardMode;
-		if(ModeMenuPtr->isButtonSelected("plot")) currentMode = plotMode;
-		if(ModeMenuPtr->isButtonSelected("log")) currentMode = logMode;
-		if(ModeMenuPtr->isButtonSelected("diagnostic")) currentMode = diagnosticMode;
-		if(ModeMenuPtr->isButtonSelected("information")) currentMode = informationMode;
-		if(ModeMenuPtr->isButtonSelected("interface")) currentMode = interfaceMode;
-		if(ModeMenuPtr->isButtonSelected("settings")) currentMode = settingsMode;
-		if(ModeMenuPtr->isButtonSelected("development")) currentMode = developmentMode;
-		if(ModeMenuPtr->isButtonSelected("exit")) {
-			ioctl(threadTouch.fd, EVIOCGRAB, 0); // Release touch for this application
-			exit(EXIT_SUCCESS);
-		}
-	}
-	else previousMode = currentMode;
-
-}
-
-void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& Gauges, std::vector<PID>& PIDs, std::vector<Menu>& Menus){
-
-	int width = 800;
-	int height = 480;
-	// Create & touch enable hotbuttons if no buttons or gauges exist
-	if(HotButtons.size() == 0 && Gauges.size() == 0) {
-		HotButtons.emplace_back(800/6, (480/2) - 30, 80, 80, "hotBtn1");
-		HotButtons.back().touchEnable();
-		HotButtons.emplace_back(800/2, (480/2) - 30, 80, 80, "hotBtn2");
-		HotButtons.back().touchEnable();
-		HotButtons.emplace_back(800 - 800/6, (480/2) - 30, 80, 80, "hotBtn3");
-		HotButtons.back().touchEnable();
-	}
-
-
-	std::vector<Button>::iterator selectedHotbutton_It = HotButtons.end();
-
-	// Handle all hot button logic here
-	for (std::vector<Button>::iterator currentHotButton = HotButtons.begin(); currentHotButton != HotButtons.end(); currentHotButton++) {
-		// When hotbutton is pressed, disable touch on hotbuttons & display objects
-		// Also create parameter selection menus
-		if(currentHotButton->isPressed()) {
-			currentHotButton->select();
-			for (std::vector<Button>::iterator hb = HotButtons.begin(); hb != HotButtons.end(); hb++)
-				hb->touchDisable();
-			for (std::vector<Gauge>::iterator g = Gauges.begin(); g != Gauges.end(); g++)
-				g->touchDisable();
-			Menus.emplace_back(width/6, (height/2)-30, (width/3) - 10, height-70, "HOTBUTTON_GroupMenu");
-			string defaultGroup = "g1";
-			Menus.back().selectButton(defaultGroup);
-			Menus.emplace_back(width-width/6, (height/2)-30, (width/3)- 10, height-70, "HOTBUTTON_DisplayObjectMenu");
-			cout << "default group: " << defaultGroup << endl;
-			Menus.emplace_back(width/2, (height/2)-30, (width/3)- 10, height-70, defaultGroup);
-		}
-
-		// If hotbutton is selected - set selected button iterator
-		if(currentHotButton->isSelected()) selectedHotbutton_It = currentHotButton;
-	}
-
-	// Create menus if menus are not present
-	if(Menus.size() != 0) {
-
-		string name = "HOTBUTTON_GroupMenu";
-		auto HOTBUTTON_GroupMenu_It = find_if(Menus.begin(), Menus.end(), [&name](const Menu& obj) {return obj.menuIdentifier.compare(name) == 0;});
-		name = "HOTBUTTON_DisplayObjectMenu";
-		auto HOTBUTTON_DisplayObjectMenu_It = find_if(Menus.begin(), Menus.end(), [&name](const Menu& obj) {return obj.menuIdentifier.compare(name) == 0;});
-		string type = "ParameterMenu";
-		auto HOTBUTTON_ParameterMenu_It = find_if(Menus.begin(), Menus.end(), [&type](const Menu& obj) {return obj.menuType.compare(type) == 0;});
-
-
-		for (std::vector<Menu>::iterator currentMenu = Menus.begin(); currentMenu != Menus.end(); currentMenu++) {
-			string pressedButtonName = currentMenu->getPressedButtonName();
-			if(!pressedButtonName.empty()) currentMenu->selectButton(pressedButtonName);
-		}
-		
-		if(HOTBUTTON_GroupMenu_It->getSelectedButtonName().compare(HOTBUTTON_ParameterMenu_It->menuIdentifier) != 0) {
-			cout << "changing parameter menu to: "<<  HOTBUTTON_GroupMenu_It->getSelectedButtonName() << endl; 
-			Menus.erase(HOTBUTTON_ParameterMenu_It);
-			Menus.emplace_back(width/2, (height/2)-30, (width/3)- 10, height-70, HOTBUTTON_GroupMenu_It->getSelectedButtonName());
-			type = HOTBUTTON_GroupMenu_It->getSelectedButtonName();
-			HOTBUTTON_ParameterMenu_It = find_if(Menus.begin(), Menus.end(), [&type](const Menu& obj) {return obj.menuType.compare(type) == 0;});
-		}
-
-		
-
-
-		// All selections made, add item and PID
-		if(	!HOTBUTTON_GroupMenu_It->getSelectedButtonName().empty()
-			&& !HOTBUTTON_ParameterMenu_It->getSelectedButtonName().empty()
-			&& !HOTBUTTON_DisplayObjectMenu_It->getSelectedButtonName().empty()) {
-
-			cout << "selected group: " << HOTBUTTON_GroupMenu_It->getSelectedButtonName() << endl;
-			cout << "selected parameter: " << HOTBUTTON_ParameterMenu_It->getSelectedButtonName() << endl;
-			cout << "selected display type:" << HOTBUTTON_DisplayObjectMenu_It->getSelectedButtonName() << endl;
-
-			if(HOTBUTTON_DisplayObjectMenu_It->getSelectedButtonName().compare("Gauge") == 0) {
-				cout << "creating a gauge!!" << endl;
-
-				std::vector<PID>::iterator p = PIDs.begin();
-				for (;p != PIDs.end(); p++){
-					if(p->getCommand().compare(HOTBUTTON_ParameterMenu_It->getSelectedButtonName())==0) {
-						p->dashboard_datalinks++;
-						cout << "PID exists in vector - adding dashboard datalink" << endl;
-						break;
-					}
-				}
-
-				if(p == PIDs.end()) {
-					PIDs.emplace_back(HOTBUTTON_ParameterMenu_It->getSelectedButtonName());
-					PIDs.back().dashboard_datalinks++;
-					cout << "Added new PID to vector and added dashboard datalink" << endl;
-				}
-				
-				Gauges.emplace_back(selectedHotbutton_It->getDOPosX(), selectedHotbutton_It->getDOPosY(), width/6, HOTBUTTON_ParameterMenu_It->getSelectedButtonName().append("Gauge"));
-				Gauges.back().draw();
-				Gauges.back().touchEnable();
-				// Erase menus in reverse creation order to prevent invalid iterators		
-				Menus.erase(HOTBUTTON_ParameterMenu_It);
-				Menus.erase(HOTBUTTON_DisplayObjectMenu_It);
-				Menus.erase(HOTBUTTON_GroupMenu_It);
-				
-				// Hide the selected hot button and re-enable touch on all other visible buttons
-				for (std::vector<Button>::iterator currentHotButton = HotButtons.begin(); currentHotButton != HotButtons.end(); currentHotButton++) {
-					if(currentHotButton == selectedHotbutton_It) {
-						currentHotButton->deselect();
-						currentHotButton->setInvisible();
-					}
-					else
-						if(currentHotButton->isVisible())
-							currentHotButton->touchEnable();
-				}
-				// Re-enable touch on other display objects (currently just gauges)
-				for (std::vector<Gauge>::iterator g = Gauges.begin(); g != Gauges.end(); g++){
-					g->touchEnable();
-				}
-			}
-		}
-	}
-
-
-	// Normal operation - menus not visible
-	else {
-		// Delete a gauge & corresponding PID when it is pressed
-		for (std::vector<Gauge>::iterator currentGauge = Gauges.begin(); currentGauge != Gauges.end(); currentGauge++) {
-			if(currentGauge->isPressed()) {
-				int gX = currentGauge->getDOPosX();
-				int gY = currentGauge->getDOPosY();
-				string PIDLink = currentGauge->getPIDLink();
-				cout << PIDLink << " Gauge released.. deleting.." << endl;
-				Gauges.erase(currentGauge);
-				for (std::vector<Button>::iterator currentHotButton = HotButtons.begin(); currentHotButton != HotButtons.end(); currentHotButton++) {
-					if(currentHotButton->getDOPosX() == gX && currentHotButton->getDOPosY() == gY) {
-						currentHotButton->setVisible();
-						currentHotButton->touchEnable();
-					}
-				}
-				// Erase corresponding PID if no other datalinks exist
-				auto PID_It = find_if(PIDs.begin(), PIDs.end(), [&PIDLink](const PID& obj) {return obj.command.compare(PIDLink) == 0;});
-				if(PID_It != PIDs.end()) {
-					PID_It->dashboard_datalinks--;
-					if(PID_It->dashboard_datalinks == 0 && PID_It->plot_datalinks == 0 && PID_It->log_datalinks == 0) {
-						cout << "No remaining datalinks - deleting PID.." << endl;
-						PIDs.erase(PID_It);	
-					}	
-				}
-				break;
-			}
-		}
-	}
-
-
-
-}  // E N D DisplayObjectManager
 
 
 
