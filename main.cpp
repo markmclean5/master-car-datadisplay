@@ -33,7 +33,7 @@ using namespace std;
 #include "modeManager.h"
 #include "DisplayObjectManager.h"
 #include "PIDVectorManager.h"
-
+#include "ConnectionManager.h"
 
 // Loop time
 uint64_t loopTime;
@@ -53,11 +53,6 @@ uint64_t secondLastPIDVectorUpdateTime = 0;
 
 ApplicationMode currentMode = noMode;			// Current application mode
 ApplicationMode previousMode = noMode;			// Previous application mode, for mode change detection
-
-// Connection Status Enums
-enum ConnectionStatus { disconnected, connecting, connected };
-
-enum ParmStatus { unknown, requested, known };
 
 //Dashboard mode vectors and states
 vector<Button> DASHBOARD_HotButtons;
@@ -152,35 +147,28 @@ int main() {
 	// ELM connection and ECU connection status
 	ConnectionStatus 	ELMStatus 					= disconnected;
 	uint64_t ELMConnectStartTime 	= 0;
-	int 		ELMConnectTimeout 	= 1000; 					// Timeout, milliseconds
-	string 	ELMResponseString 	= "";
+
+
 	string 						ELMVersion 					= "";
 	ParmStatus 				ELMVersionStat 			= unknown;
 	string 						Protocol 						= "";
 	ParmStatus 				ProtocolStat 				= unknown;
 	ConnectionStatus 	ECUStatus 					= disconnected;
 	int 							ECUConnectTries 		= 0;
-	string 						ECUResponseString 	= "";
 	string 						VIN 								= "";
 	ParmStatus 				VINStat 						= unknown;
 	
 	uint64_t lastLoopTime = 0;
 	
 	
-	// PID support 
-
-	Menu SupportedPIDMenu(width/2, height/2, width/3-20, 360, "SupportedPIDMenu");
-			
+	// PID support 		
 	vector<PID> SupportPIDs;			// PID support queries
-	
 	ParmStatus PIDSupportRequestStatus 	= unknown;
 	int currentPIDSupportRequest 				= 100;
-	
 	bool PIDSupportRequestsComplete = false;
 
 
 	// Log Mode
-
 	bool logging = false;
 
 	Button NewLogButton(width/8, height-80, width/4 - 20, 40, "NewLogButton");
@@ -245,127 +233,19 @@ int main() {
 		
 		loopTouch = threadTouch;											// Get touch for loop
 		loopTime = bcm2835_st_read();										// Get time for loop
-		//serialData = ELMSerial.serialReadUntil();							// Get serial data for loop
+
 		vgSetPixels(0, 0, BackgroundImage, 0, 0, 800, 480);					// Draw background image
-		ModeMenu.update(&loopTouch);										// Update mode menu
-
-	
-	// Autoconnection and connection statusing logic	
-	if(ELMStatus == disconnected) {
-		ELMConnectionStatusButton.setText("ELM Connecting");
-		ELMStatus = connecting;
-		ELMSerial.serialWrite("ATZ"); //ELM reset
-		ELMConnectStartTime = loopTime;		
-	}
-	if(ELMStatus == connecting && (loopTime < (ELMConnectStartTime + ELMConnectTimeout*1000))) {
-		ELMResponseString = ELMSerial.serialReadUntil();
-			if(!ELMResponseString.empty()) {
-				ELMStatus = connected;
-				ELMConnectionStatusButton.setText("ELM Connected");
-					string resp = "";
-					ELMSerial.serialWrite("ATE0"); // set elm327 output for NO ECHO
-					while(resp.empty()) {
-						resp = ELMSerial.serialReadUntil();
-					}
-					resp = "";
-					ELMSerial.serialWrite("ATSP0");	// set ELM327 to automatically detect protocol
-					while(resp.empty()) {
-						resp = ELMSerial.serialReadUntil();
-					}
-			}
-	}
-	// ELM327 connection timeout
-	if(ELMStatus == connecting && (loopTime >= (ELMConnectStartTime + ELMConnectTimeout*1000))) {		
-		ELMStatus = disconnected;
-		ELMConnectionStatusButton.setText("ELM Timeout");
-	}
-	// Reqest ELM327 Version information
-	if(ELMStatus == connected && ELMVersionStat == unknown) {			
-		ELMSerial.serialWrite("ATI");
-		ELMVersionStat = requested;
-	}
-
-	// Requesting ELM327 Version information
-	if(ELMVersionStat == requested) {
-		ELMVersion = ELMSerial.serialReadUntil();
-		if(!ELMVersion.empty()){
-			ELMVersionStat = known; 
-			ELMConnectionStatusButton.setText(ELMVersion);
-		}
-	}
-	
-	// Connect to the ECU after recieving ELM Version information
-	if(ELMVersionStat == known && ECUStatus == disconnected) {
-		ECUStatus = connecting;
-		ELMSerial.serialWrite("0101");
-	}
-	
-	// Connecting to the ECU
-	if(ECUStatus == connecting ) {
-		ECUResponseString = ELMSerial.serialReadUntil();
-		if(!ECUResponseString.empty()) {
-			cout << ECUResponseString << endl;
-			ECUConnectTries++;
-			string txt = "ECU Connecting - ";
-			cout<<txt<<endl;
-			txt.append(std::to_string(ECUConnectTries));
-			cout<<txt<<endl;
-			ECUConnectionStatusButton.setText(txt);
-			if(ECUResponseString.find("41 01") != string::npos) {
-				ECUStatus = connected;
-			}
-			else {
-				ECUStatus = disconnected;
-				ECUResponseString = "";
-			}
-		}
-
-	}
-
-	// Request current connection protocol information after connecting to the ECU
-	if(ECUStatus == connected && ProtocolStat == unknown){
-		ELMSerial.serialWrite("ATDP");
-		ProtocolStat = requested;
-	}
-
-	// Requesting protocol information
-	if(ProtocolStat == requested) {
-		Protocol = ELMSerial.serialReadUntil();
-		if(!Protocol.empty()){
-			ProtocolStat = known; 
-			ECUConnectionStatusButton.setText(Protocol);
-		}
-
-	}
-	
-	// Requestiing PID support from ECU (assuming protocol known)
-	if(ProtocolStat == known && PIDSupportRequestStatus == unknown) {
-		string requestPIDString = "0";
-		requestPIDString.append(std::to_string(currentPIDSupportRequest) );	//"0100" first time around
-		SupportPIDs.emplace_back(requestPIDString);
-		ELMSerial.serialWrite(SupportPIDs.back().getCommand());
-		PIDSupportRequestStatus = requested;
-	}
-	
-	// Waiting on some PID support request response
-	if(PIDSupportRequestStatus == requested) {
-		string resp = ELMSerial.serialReadUntil();
-		if(!resp.empty()) {
-			SupportPIDs.back().update(resp, loopTime);
-			
-			cout << " we think 0120 support state is here: " << SupportPIDs.back().getBitPositionName(31) << endl;
 		
-			// Move on to next PID support request
-			if(SupportPIDs.back().getBitPositionValue(31) && currentPIDSupportRequest < 160) {
-				PIDSupportRequestStatus = unknown;
-				currentPIDSupportRequest += 20;
-			}
-			// Or stop here
-			else
-				PIDSupportRequestStatus = known;
-		}
-	}
+		
+		
+		ModeMenu.update(&loopTouch);										// Update mode menu
+		
+		
+		
+	
 
+	// Not part of connection manager - generates menu / tables of supported PIDs
+	// PIDSupportRequestsComplete is flag to run once
 	if(PIDSupportRequestStatus == known && !PIDSupportRequestsComplete) {
 		PIDSupportRequestsComplete 	= true;
 		int numSupportPIDs = SupportPIDs.size();
@@ -384,8 +264,6 @@ int main() {
 				PIDSupportLabels[PIDidx] = (it)->getBitPositionLabel(p);
 					
 				if(PIDSupportStates[PIDidx]) {
-					cout << "Supported PID " << PIDSupportNames[PIDidx] << endl;
-					SupportedPIDMenu.addItem(PIDSupportNames[PIDidx], PIDSupportLabels[PIDidx]);
 					numSupportedPIDs++;
 				}
 				PIDidx++;
@@ -398,35 +276,32 @@ int main() {
 	
 	
 	
-		
-		// TODO: decide if this needs touch and should update the menu - if so remove double update
-		modeManager(&ModeMenu, &loopTouch, &previousMode, &currentMode);
-
-		
+	
+	
+	
+	
 		// Framerate button - need to enable / disable
 		float refreshRate = 1000000/(loopTime - lastLoopTime);
 		lastLoopTime = loopTime;
 		FramerateButton.setValue(refreshRate);
 		FramerateButton.update();
-
-		// PID Update rate button
-		float PIDUpdateRate;
-
-		if(lastPIDVectorUpdateTime != secondLastPIDVectorUpdateTime)
-			PIDUpdateRate = 1000000/(lastPIDVectorUpdateTime - secondLastPIDVectorUpdateTime);
-		else PIDUpdateRate = 0;
-
-		PIDUpdateRateButton.setValue(PIDUpdateRate);
-		PIDUpdateRateButton.update();
-
-		// Connection status button
-		ELMConnectionStatusButton.update();
-		ECUConnectionStatusButton.update();
 		
-		//NumSuportedPIDsButton
-		NumSuportedPIDsButton.update();
+		/******************************************************************************************
+		Manager Function Calls
+		******************************************************************************************/
+		// Mode Management
+		modeManager(&ModeMenu, &loopTouch, &previousMode, &currentMode);
 		
-		PIDVectorManager(&PIDVectorCurrentState, PIDs, CurrentPID, &numPIDs, &ELMSerial, &currentMode, &secondLastPIDVectorUpdateTime, &lastPIDVectorUpdateTime, &loopTime);
+		// Connection Management (ELM, ECU,Protocol detection, PID support request)
+		ConnectionManager( loopTime ,  &ELMSerial,  &ELMStatus, &ELMConnectStartTime, &ELMVersionStat , &ELMVersion, &ECUStatus , &ECUConnectTries, &ProtocolStat , &Protocol , &PIDSupportRequestStatus , &currentPIDSupportRequest, SupportPIDs);
+		
+		
+		// PID Vector Management
+		if(PIDSupportRequestStatus == known) {
+			PIDVectorManager(&PIDVectorCurrentState, PIDs, CurrentPID, &numPIDs, &ELMSerial, &currentMode, &secondLastPIDVectorUpdateTime, &lastPIDVectorUpdateTime, &loopTime);
+		}
+		
+		
 		if (PIDVectorCurrentState == complete) PIDVectorCurrentState = active;	// Loop PID vector upon update completion
 		
 		/******************************************************************************************
@@ -451,7 +326,7 @@ int main() {
 				(it)->update(&loopTouch);
 			}
 			
-			DisplayObjectManager(DASHBOARD_HotButtons, DASHBOARD_Gauges, PIDs, DASHBOARD_Menus);								// Run DisplayObjectManager (current page dashboard hotbuttons, display objects, and PIDs)		
+			DisplayObjectManager(DASHBOARD_HotButtons, DASHBOARD_Gauges, PIDs, SupportPIDs, &PIDSupportRequestStatus, DASHBOARD_Menus);								// Run DisplayObjectManager (current page dashboard hotbuttons, display objects, and PIDs)		
 		} // End Mode 1
 
 		
@@ -525,51 +400,62 @@ int main() {
 			}
 		} // End Mode 3
 		
-		
-		
 		/******************************************************************************************
 		Mode 8 - DEVELOPMENT
 		******************************************************************************************/
 		
 		if(currentMode == developmentMode) {
-
-
-		SupportedPIDMenu.update(&loopTouch);
 		
+		// Connection, protocol, and PID support statusing display
+		if(ELMStatus == connecting) {
+			ELMConnectionStatusButton.setText("ELM Connecting");
+		}
+		if(ELMStatus == connected) {
+			ELMConnectionStatusButton.setText("ELM Connected");
+		}
+		if(ELMVersionStat == known) {
+			ELMConnectionStatusButton.setText(ELMVersion);
+		}
+		if(ECUStatus == connecting) {
+			string txt = "ECU Connecting - ";
+			txt.append(std::to_string(ECUConnectTries));
+			ECUConnectionStatusButton.setText(txt);
+		}
+		if(ECUStatus == connected) {
+			string txt = "ECU Connected";
+		}
+		if(ProtocolStat == known) {
+			ECUConnectionStatusButton.setText(Protocol);
+		}
+
+		
+		// PID Update rate button
+		float PIDUpdateRate;
+
+		if(lastPIDVectorUpdateTime != secondLastPIDVectorUpdateTime)
+			PIDUpdateRate = 1000000/(lastPIDVectorUpdateTime - secondLastPIDVectorUpdateTime);
+		else PIDUpdateRate = 0;
+
+		PIDUpdateRateButton.setValue(PIDUpdateRate);
+		PIDUpdateRateButton.update();
+
+		// Connection status button
+		ELMConnectionStatusButton.update();
+		ECUConnectionStatusButton.update();
+		
+		//NumSuportedPIDsButton
+		NumSuportedPIDsButton.update();
 		
 		} // End Mode 8
 
-
-
-
-
 		End();				// Write picture to screen
-
-
-
-
 		
-
 	}  // E N D    M A I N    W H I L E
-}  // E N D    M A I N    L O O P
-
-
-
-
-
-
-
-
-
+}  // E N D    M A I N   M E T H O D
 
 /**********************************************************************************************************************************************************
 																								COMPONENT FUNCTIONS {TO BECOME SEPERATE CPP FILES}
 **********************************************************************************************************************************************************/
-
-
-
-
-
 
 // setupGraphics()
 void setupGraphics(int* widthPtr, int* heightPtr) {	

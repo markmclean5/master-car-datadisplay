@@ -5,8 +5,8 @@
 void modeManager (Menu* ModeMenuPtr, touch_t* menuTouch, ApplicationMode* previousMode, ApplicationMode* currentMode) {
 	// Default mode upon initialization
 	if(*currentMode == noMode) {
-		*currentMode = dashboardMode;
-		ModeMenuPtr->selectButton("dashboard");
+		*currentMode = developmentMode;
+		ModeMenuPtr->selectButton("development");
 	}
 	ModeMenuPtr->update(menuTouch);
 	string btnPressedString = ModeMenuPtr->getPressedButtonName();

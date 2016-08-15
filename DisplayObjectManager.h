@@ -10,10 +10,11 @@
 # include "Menu.h"
 #include <iostream>
 #include <algorithm>		// find_if
+#include "ConnectionManager.h"
 
 using namespace std;
 
-void DisplayObjectManager(std::vector<Button>&, std::vector<Gauge>&, std::vector<PID>&, std::vector<Menu>&);
+void DisplayObjectManager(std::vector<Button>&, std::vector<Gauge>&, std::vector<PID>&, std::vector<PID>&, ParmStatus*, std::vector<Menu>&);
 
 
 

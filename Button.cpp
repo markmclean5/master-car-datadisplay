@@ -287,8 +287,10 @@ void Button::enableText(char v) {
 
 /* Set button text */
 void Button::setText(string txt) {						// Set readout label
-	text.assign(txt);
-	bufferSaved = false;
+	if(txt.compare(text) != 0) {
+		text.assign(txt);
+		bufferSaved = false;
+	}
 }
 
 /* Set button value */

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& Gauges, std::vector<PID>& PIDs, std::vector<Menu>& Menus){
+void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& Gauges, std::vector<PID>& PIDs, std::vector<PID>& SupportPIDs, ParmStatus* PIDSupportRequestStatus, std::vector<Menu>& Menus){
 
 	int width = 800;
 	int height = 480;
@@ -30,18 +30,42 @@ void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& G
 			for (std::vector<Gauge>::iterator g = Gauges.begin(); g != Gauges.end(); g++)
 				g->touchDisable();
 			Menus.emplace_back(width/6, (height/2)-30, (width/3) - 10, height-70, "HOTBUTTON_GroupMenu");
-			string defaultGroup = "g1";
+			string defaultGroup = "standardPIDMenu";
 			Menus.back().selectButton(defaultGroup);
 			Menus.emplace_back(width-width/6, (height/2)-30, (width/3)- 10, height-70, "HOTBUTTON_DisplayObjectMenu");
-			cout << "default group: " << defaultGroup << endl;
 			Menus.emplace_back(width/2, (height/2)-30, (width/3)- 10, height-70, defaultGroup);
+			
+			
+			
+			
+			// Not part of connection manager - generates menu / tables of supported PIDs
+			// PIDSupportRequestsComplete is flag to run once
+			if(*PIDSupportRequestStatus == known) {
+				int numSupportPIDs = SupportPIDs.size();
+				int PIDidx = 0;
+				bool* PIDSupportStates = new bool[numSupportPIDs*31];
+				string* PIDSupportNames = new string[numSupportPIDs*31];
+				string* PIDSupportLabels = new string[numSupportPIDs*31];
+				for(std::vector<PID>::iterator it = SupportPIDs.begin(); it != SupportPIDs.end(); it++)  {
+					for(int p = 0; p<30; p++) {
+						PIDSupportStates[PIDidx] = (it)->getBitPositionValue(p);
+						PIDSupportNames[PIDidx] = (it)->getBitPositionName(p);
+						PIDSupportLabels[PIDidx] = (it)->getBitPositionLabel(p);
+						
+						if(PIDSupportStates[PIDidx]) {
+							Menus.back().addItem(PIDSupportNames[PIDidx], PIDSupportLabels[PIDidx]);
+						}
+						PIDidx++;
+					}
+				}
+			}
 		}
 
 		// If hotbutton is selected - set selected button iterator
 		if(currentHotButton->isSelected()) selectedHotbutton_It = currentHotButton;
 	}
 
-	// Create menus if menus are not present
+	// If menus are present
 	if(Menus.size() != 0) {
 
 		string name = "HOTBUTTON_GroupMenu";
@@ -58,7 +82,6 @@ void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& G
 		}
 		
 		if(HOTBUTTON_GroupMenu_It->getSelectedButtonName().compare(HOTBUTTON_ParameterMenu_It->menuIdentifier) != 0) {
-			cout << "changing parameter menu to: "<<  HOTBUTTON_GroupMenu_It->getSelectedButtonName() << endl; 
 			Menus.erase(HOTBUTTON_ParameterMenu_It);
 			Menus.emplace_back(width/2, (height/2)-30, (width/3)- 10, height-70, HOTBUTTON_GroupMenu_It->getSelectedButtonName());
 			type = HOTBUTTON_GroupMenu_It->getSelectedButtonName();

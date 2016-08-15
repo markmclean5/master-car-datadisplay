@@ -1,7 +1,7 @@
 CXX=distcc arm-linux-gnueabihf-g++ -std=gnu++0x $(INCLUDEFLAGS) -g
 INCLUDEFLAGS=-I/opt/vc/include -I/opt/vc/include/interface/vmcs_host/linux -I/opt/vc/include/interface/vcos/pthreads -I.. -I/home/pi/config4cpp/include
 LIBFLAGS=-L/opt/vc/lib -L/opt/vc/lib -L/home/pi/config4cpp/lib -lGLESv2 -lEGL -lbcm_host -lpthread  -ljpeg
-objects = touchscreen.o Gauge.o TouchableObject.o DisplayableObject.o DataStream.o Button.o TextView.o Menu.o Serial.o parsingUtilities.o PID.o modeManager.o DisplayObjectManager.o PIDVectorManager.o main.o
+objects = touchscreen.o Gauge.o TouchableObject.o DisplayableObject.o DataStream.o Button.o TextView.o Menu.o Serial.o parsingUtilities.o PID.o modeManager.o DisplayObjectManager.o PIDVectorManager.o ConnectionManager.o main.o
 
 all: $(objects) car-datadisplay
 
@@ -21,6 +21,7 @@ PID.o: PID.cpp
 modeManager.o: modeManager.cpp
 DisplayObjectManager.o: DisplayObjectManager.cpp
 PIDVectorManager.o: PIDVectorManager.cpp
+ConnectionManager.o: ConnectionManager.cpp
 
 
 car-datadisplay: car-datadisplay $(objects)
