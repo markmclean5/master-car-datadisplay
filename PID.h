@@ -24,67 +24,68 @@ private:	// Class Private properties
 	std::string fullName;
 	std::string shortName;
 	std::string id;
-	int numRanges;
-
 	
-
-	float supportedMinVal, supportedMaxVal;
-	int numDataBytes;
-	float byteGain[4];
-	float byteOffset[4];
-	float TotalGain, TotalOffset;
-
-
-	// Range Properties
-	float* rangeScaling;		// scaling value of every range
-	float* rangeStart;			// min value of every range
-	float* rangeStop;			// max value of every range
-	std::string* EngUnits;		// engineering units of every range
-	// Simple moving average properties
-	int* simpleMALag;
-	float** simpleMAData;
-	// Weighted moving average properties
-	int* weightedMALag;
-	float** weightedMACoeffs;
-	float** weightedMAData;
-
 	// Class properties
 	bool debug;
-	int currentRange;
-	int lastRange;
-
-	// Timing related properties
-	float readoutFreq;
-
+	
 	// Add more timing replated properties
 	uint64_t lastTime;
 	uint64_t currentTime;
 	uint64_t lastUpdateTime;
 	float updateRate;			// The rate at which PID.update() is being called 
-	float readoutUpdateRate;
-	int desiredUpdateRate;
 
 
-	// Bitwise encoded PIDs
-	std::string type;
-	uint32_t bitValue;
-	std::string bitNames[32];
-	std::string bit0States[32];
-	std::string bit1States[32];
-	std::string bitLabels[32];
 	
-	// Enumerated PIDs
-	int numEnums;		// Number of enumerations per PID
-	int* startBits;			// Start bit positions for each enumeration
-	int* stopBits;			// Stop bit positions for each enumeration
-	int* numVals;		// Number of values for each enumeration
+	int numDataBytes;
+
+	int numElements;			// Total number of data elements in the ("num_elements" in config file)
+	int numValueElements;		// Number of value elements in the PID (type "value" in config file)
+	int numBitEncodedElements;	// Number of bit-encoded elements in the PID (type "bit-encoded" in config file)
+	int numEnumeratedElements;	// Number of enumerated-elements in the PID (type "enumerated" in config file)
+	string* types;				// Type of each element in the PID
+
+
+	// Attributes of "value" type element
+	char* valueStartBytes;			// Byte at which each element starts
+	int* numValueBytes;			// Number of bytes for each element
+	float* supportedMinVals;	// Minumum supported value for each element	
+	float*supportedMaxVal;		// Maximum supported value for each element
+
+	float** byteGains;			// gain values for each byte of each element
+	float** byteOffsets;		// offset values for each byte of each element
+	float* TotalGains;			// total gain values for each element
+	float* TotalOffsets;		// total offset values for each element
+	int* numRanges;				// number of ranges for each element
+
+	// "value" type element range element
+	float** rangeScalings;		// scaling value of every range of each element
+	float** rangeStarts;		// start value of every range of each element
+	float** rangeStops;			// stop value of every range of each element
+	std::string** EngUnits;		// engineering units of every range of each element
 	
-	int** enumVals;				// array of values for each enumeration
-	std::string ** enumStates;	// array of states for each enumeration
+	int* currentRanges;			// current range number for each element
+	int* lastRanges;			// last range number for each element
+
+
+	// Attributes of "bit-encoded" type element
+	uint32_t* bitValues;		// 32 bit storage for bit states (entire PID, all elements)
+
+	int* numBitEncodedBits;		// start bit position for each element
+	int* bitEncodedStartBits;	// 
+
+	std::string** bitNames;		// bit names for each bit of each element
+	std::string** bit0States;	// bit '0' state names for each bit of each element
+	std::string** bit1States;	// bit '1' state names for each bit of eahc element
+	std::string** bitLabels;	// bit labels for each bit of each element (display)
 	
-
-
-
+	// Attributes of "enumerated" type element
+	int* numEnums;				// Number of enumerations for each element
+	int* enumStartBits;			// Start bit positions for each element
+	int* numEnumBits;			// number of bits for each element
+	int* numVals;				// Number of enumeration values for each element
+	int** enumVals;				// array of values for each enumeration of each element
+	std::string ** enumStates;	// array of states for each enumeration of each element
+	
 
 
 public:		// Class members

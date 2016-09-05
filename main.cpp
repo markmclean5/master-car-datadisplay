@@ -142,7 +142,7 @@ int main() {
 	
 	Button ELMConnectionStatusButton(200, 18, 100, 35, "ConnectionButton");
 	Button ECUConnectionStatusButton(350, 18, 160, 35, "ConnectionButton");
-	Button NumSuportedPIDsButton(350+90, 18, 50, 35, "FramerateButton");
+	Button NumSuportedPIDsButton(350+90, 18, 50, 35, "NumPIDsButton");
 	
 	// ELM connection and ECU connection status
 	ConnectionStatus 	ELMStatus 					= disconnected;

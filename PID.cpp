@@ -49,6 +49,84 @@ void PID::configure(string ident) {
 		type = parseString(cfg, PIDName, "type");
 		command = parseString(cfg, PIDName, "command");
 		numDataBytes = parseInt(cfg, PIDName, "numDataBytes");
+
+
+		numElements = parseInt(cfg, PIDName, "numElements");
+		types = new string[numElements];
+		// Get number of each type of PID data elements
+		numValueElements = 0;
+		numBitEncodedElements = 0;
+		numEnumeratedElements = 0;
+
+
+		// Count the instances of each element type
+		String elementScope = "element";
+		currentElement = 1;
+		for(;currentElement<=numElements;currentElement++) {
+			string currentElementScope = elementScope + to_string(currentElement);
+			string elementType = parseString(cfg, PIDName, currentRangeScope, ".type");
+
+			if(elementType.compare("value") == 0) {
+				numValueElements++;
+			}
+			else if(elementType.compare("bit-encoded") == 0) {
+				numBitEncodedElements++;
+			}
+			else if(elementType.compare("enumerated") == 0) {
+				numEnumeratedElements++;
+			}
+		}
+
+		// Dynamic creation of value element attributes
+		if(numValueElements != 0) {
+			valueStartBytes = new char[numValueElements];
+			numValueBytes = new int[numValueElements];
+			supportedMinVals = new float[numValueElements];
+			supportedMaxVals = new float[numValueElements];
+			numRanges = new int[numValueElements];
+			TotalGains = new float[numValueElements];
+			TotalOffsets = new float[numRanges];
+
+			// To be further allocated later on when number of ranges for each element are known
+			byteGains = new float*[numValueElements];
+			byteOffsets = new float*[numValueElements];
+			rangeScalings = new float*[numValueElements];
+			rangeStarts = new float*[numValueElements];
+			rangeStops = new float*[numValueElements];
+
+		}
+
+		// Dynamic creation of bit encoded element attributes
+		if(numBitEncodedElements != 0) {
+			bitValues = new uint32_t[numBitEncodedElements];
+			bitNames = new string*[numBitEncodedElements];
+
+			// To be further allocated later on when number of bits for each element is known
+			bit0states = new string*[numBitEncodedElements];
+			bit1states = new string*[numBitEncodedElements];
+			bitLabels = new string*[numBitEncodedElements];
+		}
+
+		// Dynamic creation of enumerated element attributes
+		if(numEnumeratedElements != 0){
+			numEnums = new int[numEnumeratedElements];
+			enumStartBits = new int[numEnumeratedElements];
+			numEnumBits = new int[numEnumeratedElements];
+			numVals = new int[numEnumeratedElements];
+
+			// To be further allocated later on when number of bits and enumeration values are known
+			int enumVals = new int*[numEnumeratedElements];
+			string enumStates = new string*[numEnumeratedElements];
+		}
+
+
+
+
+
+
+
+		/// ----------------------------------------------------------------------------------------------
+
 		if(type.compare("value") == 0) {									// Value type PID configuration
 			numRanges = parseInt(cfg, PIDName, "numRanges");
 			supportedMinVal = parseFloat(cfg, PIDName, "supportedMinVal");

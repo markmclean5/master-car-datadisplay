@@ -97,11 +97,6 @@ void Serial::serialWrite(string data) {
 
 string Serial::serialReadUntil(void) {
 	string output = "";
-	//uint64_t currentTime = bcm2835_st_read();
-	//if(!endCharReceived && (currentTime >= readTimeoutTime)) {
-	//	timeoutState = true;
-	//	readUntilBuffer = "";
-	//}
 	string data = serialRead();
 		if(!data.empty()) {
 		readUntilBuffer.append(data);
@@ -116,6 +111,7 @@ string Serial::serialReadUntil(void) {
 		string temp = readUntilBuffer.substr(endCharLocation+1, std::string::npos);
 		readUntilBuffer.assign(temp);
 		endCharReceived = false;
+		output.pop_back();			// Remove last character
 	}
 	return output;
 }

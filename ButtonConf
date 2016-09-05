@@ -35,6 +35,25 @@ FramerateButton {
 	selectable = "false";
 };
 
+NumPIDsButton {
+	name = "NumPIDsButton";
+	cornerRadius = "0";
+	borderWidth = "1";
+	borderColor = ["1.0", "1.0", "1.0", "1.0"];
+	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
+	enableText = "true";
+	textAlign = "B";
+	textColor = ["1.0", "1.0", "1.0", "1.0"];
+	defaultText = "PIDs";
+	enableValue = "true";
+	valueAlign = "T";
+	valueColor = ["1.0", "1.0", "1.0", "1.0"];
+	valueRefreshRate = "5";
+	valueDecPlaces = "0";
+	pressDebounce = "500";
+	selectable = "false";
+}
+
 NewLogButton {
 	name = "NewLogButton";
 	cornerRadius = "10";
