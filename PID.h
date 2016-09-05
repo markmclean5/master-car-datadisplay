@@ -89,55 +89,38 @@ private:	// Class Private properties
 
 
 public:		// Class members
-	// Setters (call before update!!!!)
-
 	PID(std::string); 							// PID constructor, accepts name of identifer to find PID configuration)
-	void setDebugMode(bool);					
 
-	void setCharTags(char, char);				// Set serial stream start and stop characters		(start char, stop char)
-	void setStreamScaling(float);						// Set stream scaling (convert to eng. units)		(set)
-	void setRangeLimits(float,float, int);		// Set data range limits 		(min, max, range #)
-	void setRangeScaling(float, int);			// Set range scaling, range
-	void setEngUnits(std::string, int);				// Set engineering unit string, range
+	// Get information about the PID and data elements
+	int getNumPIDElements(void);							// Get the number of elements contained in the PID
+	string getPIDElementName(int);							// Get the (name string) of an element (#)
+	string getPIDElementType(int);							// Get the (type string) of an element (#)
 
+	// Get data from value elements
+	float getValue(std::string);							// Get raw datum for the provided element name
+	std::string getValueEngUnits(std::string);				// Get engineering units for the provided element name
 
-	// Weighted Moving Average Setters
-	void setWeightedMALag(int, int);			// Weighted MA lag, range
-	void setWeightedMACoeffs(float*, int);		// Weighted MA coeffs, range
+	// Get data from bit-encoded elements
+	int getBitsEncoded(std::string);						// Get number of bits of a provided element name
+	std::string getBitName(std::string, int);				// Get (name string) of provided bit (#) of provided elenment
+	bool getBitNameValue(std::string, std::string);			// Get value (t/f) of provided bit name of provided element name
+	std::string getBitNameState(std::string, std::string);	// Get (state string) of provided bit name of provided element name
+	bool getBitValue(std::string, int);						// Get value (t/f) of provided bit (#) of provided element name
+	std::string getBitState(std::string, int);				// Get (state string) of provided bit (#) of provided element name
+	std::string getBitLabel(std::string, int);				// Get (label string) of provided bit (#) of provided element
+	
+	// Get data from enumerated elements
+	std::string getEnumName(std::string);					// Get (name string) of the provided element name
+	int getEnumValue(std::string);							// Get the enumeration value (#) of the provided element name
+	std::string getEnumState(std::string);					// Get the enumeration (state string) of the provided element name
 
-	// Simple Moving Average Setter
-	void setSimpleMALag(int, int);				// Simple MA lag, range
-
-	// Setters readout update frequency
-	void setReadoutFreq(int);					
+	// General PID operation
+	float getRawUpdateRate(void);							// Get update rate (Hz, between update() calls)
+	std::string getCommand(void);							// Get command (to issue to ELM)
+	void update(std::string, uint64_t);						// Update method (serial data, time)
 
 	
-	// Getters for DataStream data
-	float getRawDatum(void);
-	float getWeightedMADatum(void);
-	float getSimpleMADatum(void);
-	float getReadoutDatum(void);
-	std::string getEngUnits(void);
-
-
-	// Getters for DataStream timing info
-	float getRawUpdateRate(void);
-	float getReadoutUpdateRate(void);
-
-	// Update function
-	void update(std::string, uint64_t);				// Update method									(serial stream, time)
-	std::string getCommand(void);
 	std::string command;
-
-
-	// Bit-encoded functions
-	bool getBitNameValue(std::string);
-	std::string getBitNameState(std::string);
-	bool getBitPositionValue(int);
-	std::string getBitPositionState(int);
-	std::string getBitPositionName(int);
-	std::string getBitPositionLabel(int);
-	int getNumBits(void);
 
 	// Datalinks - count number of elements for each mode which rely on data from this PID
 	int dashboard_datalinks;
@@ -148,7 +131,7 @@ public:		// Class members
 
 private:	// Class private members
 
-	void configure(std::string);						// PID configure method
+	void configure(std::string);							// PID configure method
 
 };
 #endif
