@@ -8,8 +8,6 @@
  * Data class for processing OBD2 PID data received and processing the data into engineering units.
  *
  * Provides:	Last raw datum recieved
- *				Weighted moving average of data using provided coefficents and lag
- *				Simple moving average of data using provided lag
  *				Capability to set multiple ranges of data output in different eng. units
  *					Note: Ranges must not overlap. Example: For boost gauge processing,
  *					input data is recieved in PSI. Positive input data is output in "PSI",
@@ -42,14 +40,14 @@ private:	// Class Private properties
 	int numValueElements;		// Number of value elements in the PID (type "value" in config file)
 	int numBitEncodedElements;	// Number of bit-encoded elements in the PID (type "bit-encoded" in config file)
 	int numEnumeratedElements;	// Number of enumerated-elements in the PID (type "enumerated" in config file)
-	string* types;				// Type of each element in the PID
+	std::string* types;				// Type of each element in the PID
 
 
 	// Attributes of "value" type element
 	char* valueStartBytes;			// Byte at which each element starts
 	int* numValueBytes;			// Number of bytes for each element
 	float* supportedMinVals;	// Minumum supported value for each element	
-	float*supportedMaxVal;		// Maximum supported value for each element
+	float* supportedMaxVals;		// Maximum supported value for each element
 
 	float** byteGains;			// gain values for each byte of each element
 	float** byteOffsets;		// offset values for each byte of each element
@@ -69,10 +67,9 @@ private:	// Class Private properties
 
 	// Attributes of "bit-encoded" type element
 	uint32_t* bitValues;		// 32 bit storage for bit states (entire PID, all elements)
-
-	int* numBitEncodedBits;		// start bit position for each element
-	int* bitEncodedStartBits;	// 
-
+	int* numBitEncodedBits;		// number of bits in each element
+	int* bitEncodedStartBits;		// start bit position for each element
+	
 	std::string** bitNames;		// bit names for each bit of each element
 	std::string** bit0States;	// bit '0' state names for each bit of each element
 	std::string** bit1States;	// bit '1' state names for each bit of eahc element
@@ -83,6 +80,7 @@ private:	// Class Private properties
 	int* enumStartBits;			// Start bit positions for each element
 	int* numEnumBits;			// number of bits for each element
 	int* numVals;				// Number of enumeration values for each element
+	
 	int** enumVals;				// array of values for each enumeration of each element
 	std::string ** enumStates;	// array of states for each enumeration of each element
 	
@@ -91,6 +89,8 @@ private:	// Class Private properties
 public:		// Class members
 	PID(std::string); 							// PID constructor, accepts name of identifer to find PID configuration)
 
+	/* --- Test constructor and configure only
+	
 	// Get information about the PID and data elements
 	int getNumPIDElements(void);							// Get the number of elements contained in the PID
 	string getPIDElementName(int);							// Get the (name string) of an element (#)
@@ -119,13 +119,18 @@ public:		// Class members
 	std::string getCommand(void);							// Get command (to issue to ELM)
 	void update(std::string, uint64_t);						// Update method (serial data, time)
 
+	*/
 	
 	std::string command;
+	
+
 
 	// Datalinks - count number of elements for each mode which rely on data from this PID
 	int dashboard_datalinks;
 	int plot_datalinks;
 	int log_datalinks;
+	
+	
 
 
 

@@ -220,6 +220,12 @@ int main() {
      string logFileName;
 
 
+	 // PID TEST
+	 
+	 PID TestPID("TEST");
+	 cout << "Successfully created Test PID" << endl;
+	 
+	 // END PID TEST
 	 
 	 
 	 
@@ -242,7 +248,7 @@ int main() {
 		
 		
 		
-	
+	/*
 
 	// Not part of connection manager - generates menu / tables of supported PIDs
 	// PIDSupportRequestsComplete is flag to run once
@@ -273,7 +279,7 @@ int main() {
 		NumSuportedPIDsButton.setValue(numSupportedPIDs);
 	}
 	
-	
+	*/
 	
 	
 	
@@ -292,6 +298,7 @@ int main() {
 		// Mode Management
 		modeManager(&ModeMenu, &loopTouch, &previousMode, &currentMode);
 		
+		/*
 		// Connection Management (ELM, ECU,Protocol detection, PID support request)
 		ConnectionManager( loopTime ,  &ELMSerial,  &ELMStatus, &ELMConnectStartTime, &ELMVersionStat , &ELMVersion, &ECUStatus , &ECUConnectTries, &ProtocolStat , &Protocol , &PIDSupportRequestStatus , &currentPIDSupportRequest, SupportPIDs);
 		
@@ -303,10 +310,14 @@ int main() {
 		
 		
 		if (PIDVectorCurrentState == complete) PIDVectorCurrentState = active;	// Loop PID vector upon update completion
-		
+
+
 		/******************************************************************************************
 		Mode 1 - DASHBOARD
 		******************************************************************************************/
+		
+		/*
+		
 		// Dashboard mode run-time
 		if(currentMode == dashboardMode) {
 			for (std::vector<Button>::iterator it = DASHBOARD_HotButtons.begin(); it != DASHBOARD_HotButtons.end(); it++) {		// Update all hot buttons
@@ -329,7 +340,7 @@ int main() {
 			DisplayObjectManager(DASHBOARD_HotButtons, DASHBOARD_Gauges, PIDs, SupportPIDs, &PIDSupportRequestStatus, DASHBOARD_Menus);								// Run DisplayObjectManager (current page dashboard hotbuttons, display objects, and PIDs)		
 		} // End Mode 1
 
-		
+		*/
 		
 		/******************************************************************************************
 		Mode 2 - PLOT
@@ -341,10 +352,13 @@ int main() {
 
 		
 		
+
 		
 		/******************************************************************************************
 		Mode 3 - LOG
 		******************************************************************************************/
+		
+		/*
 		// Plot mode run-time
 		if(currentMode == logMode) {
 			NewLogButton.update();
@@ -404,6 +418,7 @@ int main() {
 		Mode 8 - DEVELOPMENT
 		******************************************************************************************/
 		
+		/*
 		if(currentMode == developmentMode) {
 		
 		// Connection, protocol, and PID support statusing display
@@ -447,6 +462,10 @@ int main() {
 		NumSuportedPIDsButton.update();
 		
 		} // End Mode 8
+		
+		
+		*/
+		
 
 		End();				// Write picture to screen
 		

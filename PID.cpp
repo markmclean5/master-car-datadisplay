@@ -22,13 +22,10 @@ PID::PID(string PIDid) {
 	cout << "PID created: " << PIDid << endl; 
 	id = PIDid;
 	debug = false;
-	currentRange = 1;
-	lastRange = 1;
 	configure(PIDid);
 	currentTime = 0;
 	lastTime = 0;
 	updateRate = 0;
-	desiredUpdateRate = 0;
 	lastUpdateTime = 0;
 
 	dashboard_datalinks = 0;
@@ -44,27 +41,30 @@ void PID::configure(string ident) {
 	try {
 		cfg->parse("/home/pi/master-car-datadisplay/PIDConf");
 		string PIDName = ident;
+		
+		
 		fullName = parseString(cfg, PIDName, "fullName");
 		shortName = parseString(cfg, PIDName, "shortName");
-		type = parseString(cfg, PIDName, "type");
+		
+		
+		//type = parseString(cfg, PIDName, "type");							// -move to each element
 		command = parseString(cfg, PIDName, "command");
 		numDataBytes = parseInt(cfg, PIDName, "numDataBytes");
 
 
+		// New stuff
 		numElements = parseInt(cfg, PIDName, "numElements");
 		types = new string[numElements];
 		// Get number of each type of PID data elements
 		numValueElements = 0;
 		numBitEncodedElements = 0;
 		numEnumeratedElements = 0;
-
-
 		// Count the instances of each element type
-		String elementScope = "element";
-		currentElement = 1;
-		for(;currentElement<=numElements;currentElement++) {
+		string elementScope = "element";
+		
+		for(int currentElement = 1;currentElement<=numElements;currentElement++) {
 			string currentElementScope = elementScope + to_string(currentElement);
-			string elementType = parseString(cfg, PIDName, currentRangeScope, ".type");
+			string elementType = parseString(cfg, PIDName, currentElementScope, ".type");
 
 			if(elementType.compare("value") == 0) {
 				numValueElements++;
@@ -85,7 +85,7 @@ void PID::configure(string ident) {
 			supportedMaxVals = new float[numValueElements];
 			numRanges = new int[numValueElements];
 			TotalGains = new float[numValueElements];
-			TotalOffsets = new float[numRanges];
+			TotalOffsets = new float[numValueElements];
 
 			// To be further allocated later on when number of ranges for each element are known
 			byteGains = new float*[numValueElements];
@@ -99,11 +99,13 @@ void PID::configure(string ident) {
 		// Dynamic creation of bit encoded element attributes
 		if(numBitEncodedElements != 0) {
 			bitValues = new uint32_t[numBitEncodedElements];
-			bitNames = new string*[numBitEncodedElements];
-
+			numBitEncodedBits = new int[numBitEncodedElements];
+			bitEncodedStartBits = new int[numBitEncodedElements];
+			
 			// To be further allocated later on when number of bits for each element is known
-			bit0states = new string*[numBitEncodedElements];
-			bit1states = new string*[numBitEncodedElements];
+			bitNames = new string*[numBitEncodedElements];
+			bit0States = new string*[numBitEncodedElements];
+			bit1States = new string*[numBitEncodedElements];
 			bitLabels = new string*[numBitEncodedElements];
 		}
 
@@ -115,64 +117,76 @@ void PID::configure(string ident) {
 			numVals = new int[numEnumeratedElements];
 
 			// To be further allocated later on when number of bits and enumeration values are known
-			int enumVals = new int*[numEnumeratedElements];
-			string enumStates = new string*[numEnumeratedElements];
+			enumVals = new int*[numEnumeratedElements];
+			enumStates = new string*[numEnumeratedElements];
 		}
 
 
+		// Loop through all elements of the PID and do all the configuration work {
+			
+			// Indices of each element type
+			int valueElementIdx = 0;
+			int bitEncodedElementIdx = 0;
+			int enumElementIdx = 0;
+			
+			for (int currentElement = 1; currentElement <= numElements; currentElement++) {
+				string currentElementScope = elementScope + to_string(currentElement);
+				string elementType = parseString(cfg, PIDName, currentElementScope, ".type");					// Maybe create a PID wide array of types?? (double parsing this)
+				if(elementType.compare("value") == 0) {									// Value type PID element configuration
+				
+					// Value max and min (before range scalings)
+					supportedMinVals[valueElementIdx] = parseFloat(cfg, PIDName, currentElementScope, ".min_val");
+					supportedMaxVals[valueElementIdx] = parseFloat(cfg, PIDName, currentElementScope, ".max_val");
+					
+					// Number of bytes
+					numValueBytes[valueElementIdx] = parseInt(cfg, PIDName, currentElementScope, ".num_bytes");
 
-
-
-
-
+					// Allocate space for gains and offsets for each byte
+					byteGains[valueElementIdx] = new float[numValueBytes[valueElementIdx]];
+					byteOffsets[valueElementIdx] = new float[numValueBytes[valueElementIdx]];
+					
+					// Value start byte ('A', 'B'....)
+					valueStartBytes[valueElementIdx] = parseString(cfg, PIDName, currentElementScope, ".start_byte")[0];		// Trying to get first character of string
+					
+					// Parse all byte gains and offsets
+					for(int parseByte = 0; parseByte < numValueBytes[valueElementIdx]; parseByte++) {
+						char byteScope = valueStartBytes[valueElementIdx]+=parseByte;
+						byteGains[valueElementIdx][parseByte] = parseFloat(cfg, PIDName, currentElementScope, "."+ std::to_string(byteScope) + "_gain");
+						byteOffsets[valueElementIdx][parseByte] = parseFloat(cfg, PIDName, currentElementScope, "."+ std::to_string(byteScope) + "_offset");
+					}
+					// Parse total gain and offset (applied to final value)
+					TotalGains[valueElementIdx] = parseFloat(cfg, PIDName, ".total_gain");
+					TotalOffsets[valueElementIdx] = parseFloat(cfg, PIDName, currentElementScope, ".total_offset");
+		
+					// Parse number of ranges
+					numRanges[valueElementIdx]= parseInt(cfg, PIDName, currentElementScope, ".num_ranges");
+						
+					// Allocate all double-pointers for current element range specific attributes now that number of ranges is known
+					rangeScalings[valueElementIdx] = new float[numRanges[valueElementIdx]];
+					rangeStarts[valueElementIdx] = new float[numRanges[valueElementIdx]];
+					rangeStops[valueElementIdx] = new float[numRanges[valueElementIdx]];
+					EngUnits[valueElementIdx] = new string[numRanges[valueElementIdx]];
+						
+					// Parse attributes of each range
+					for(int currentParseRange = 1; currentParseRange<=numRanges[valueElementIdx]; currentParseRange++) {
+						string currentRangeScope = "range" + to_string(currentParseRange);
+						rangeScalings[valueElementIdx][currentParseRange-1] = parseFloat(cfg, PIDName +"."+ currentElementScope, currentRangeScope, ".scaling");
+						rangeStarts[valueElementIdx][currentParseRange-1] = parseFloat(cfg, PIDName + "." + currentElementScope, currentRangeScope, ".rangeStart");
+						rangeStops[valueElementIdx][currentParseRange-1] = parseFloat(cfg, PIDName + "." + currentElementScope, currentRangeScope, ".rangeStop");
+						EngUnits[valueElementIdx][currentParseRange-1] = parseString(cfg, PIDName + "." + currentElementScope, currentRangeScope, ".engUnits");
+					}
+					valueElementIdx++;
+				} // End of value element parsing loop
+				
+				
+			} // End of element-parsing loooop
+			
+		
+		
 		/// ----------------------------------------------------------------------------------------------
 
-		if(type.compare("value") == 0) {									// Value type PID configuration
-			numRanges = parseInt(cfg, PIDName, "numRanges");
-			supportedMinVal = parseFloat(cfg, PIDName, "supportedMinVal");
-			supportedMaxVal = parseFloat(cfg, PIDName, "supportedMaxVal");
-			byteGain[0] = parseFloat(cfg, PIDName, "AGain");
-			byteOffset[0] = parseFloat(cfg, PIDName, "AOffset");
-			byteGain[1] = parseFloat(cfg, PIDName, "BGain");
-			byteOffset[1] = parseFloat(cfg, PIDName, "BOffset");
-			byteGain[2] = parseFloat(cfg, PIDName, "CGain");
-			byteOffset[2] = parseFloat(cfg, PIDName, "COffset");
-			byteGain[3] = parseFloat(cfg, PIDName, "DGain");
-			byteOffset[3] = parseFloat(cfg, PIDName, "DOffset");
-			TotalGain = parseFloat(cfg, PIDName, "TotalGain");
-			TotalOffset = parseFloat(cfg, PIDName, "TotalOffset");
-			rangeScaling = new float[numRanges];
-			rangeStart = new float[numRanges];
-			rangeStop = new float[numRanges];
-			EngUnits = new string[numRanges];
-			weightedMALag = new int[numRanges];
-			simpleMALag = new int[numRanges];
-			weightedMACoeffs = new float*[numRanges];
-			weightedMAData = new float*[numRanges];
-			simpleMAData = new float*[numRanges];
-			string rangeScope = "range";
-			currentRange = 1;
-			for(;currentRange<=numRanges;currentRange++) {
-				string currentRangeScope = rangeScope + to_string(currentRange);
-				rangeScaling[currentRange-1] = parseFloat(cfg, PIDName, currentRangeScope, ".scaling");
-				rangeStart[currentRange-1] = parseFloat(cfg, PIDName, currentRangeScope, ".rangeStart");
-				rangeStop[currentRange-1] = parseFloat(cfg, PIDName, currentRangeScope, ".rangeStop");
-				EngUnits[currentRange-1] = parseString(cfg, PIDName, currentRangeScope, ".engUnits");
-				simpleMALag[currentRange-1] = parseInt(cfg, PIDName, currentRangeScope, ".simpleMALag");
-				simpleMAData[currentRange-1] = new float[simpleMALag[currentRange-1]];
-				float* currentMAData = simpleMAData[currentRange-1];
-				for(int i = 0; i<simpleMALag[currentRange-1]; i++)
-					currentMAData[i] = 0;
-				weightedMALag[currentRange-1] = parseInt(cfg, PIDName, currentRangeScope, ".weightedMALag");
-				weightedMAData[currentRange-1] = new float[weightedMALag[currentRange-1]];
-				currentMAData = weightedMAData[currentRange-1];
-				for(int i = 0; i<weightedMALag[currentRange-1]; i++)
-					currentMAData[i] = 0;
-				weightedMACoeffs[currentRange-1] = new float[weightedMALag[currentRange-1]];
-				parseFloatArray(cfg, PIDName, currentRangeScope, weightedMALag[currentRange-1], weightedMACoeffs[currentRange-1], ".weightedMACoeffs");
-			}
-		currentRange = 1;
-		}
+
+		/*
 		else if(type.compare("bit-encoded") == 0) {						// Bit-encoded PID configuration
 			char byt = 'A';
 			int messageBit = 0;
@@ -241,6 +255,7 @@ void PID::configure(string ident) {
 			}
 
 		}
+		*/
 		
 		
 	}catch(const ConfigurationException & ex) {
@@ -248,9 +263,10 @@ void PID::configure(string ident) {
 	}
 	cfg->destroy();
 
-	cout << "Current range at end of configure: " << currentRange << endl;
+	cout << "Reached end of configure!" << endl;
 }
 
+/*
 
 string PID::getCommand(void) {
 	return command;
@@ -263,53 +279,14 @@ string PID::getEngUnits(void) {
 }
 
 float PID::getRawDatum(void) {
-	//cout << "get raw datum called for "<< getCommand() <<"  - range: " << currentRange << endl;
-	float* currentSimpleMAData = simpleMAData[currentRange-1];
-	return currentSimpleMAData[simpleMALag[currentRange-1]-1];			// returns most recent value
+	// re-write
+	float apples = 0;
+	return apples;
 }
-float PID::getWeightedMADatum(void)
-{
-	float* currentWeightedMAData = weightedMAData[currentRange-1];
-	float* currentWeightedMACoeffs = weightedMACoeffs[currentRange-1];
-	float datum = 0;
-	float coeffSum = 0;
-	int idx = 0;
-	for(;idx<weightedMALag[currentRange-1];idx++)
-	{
-		datum += (currentWeightedMAData[idx])* (currentWeightedMACoeffs[idx]);
-		coeffSum += currentWeightedMACoeffs[idx];
-	}
-	if (coeffSum == 0) coeffSum = 1;
-	datum = datum/coeffSum;
-	return datum;
-}
-float PID::getSimpleMADatum(void)
-{
-	float* currentSimpleMAData = simpleMAData[currentRange-1];
-	float datum = 0;
-	int idx = 0;
-	for(;idx<simpleMALag[currentRange-1];idx++) datum += (currentSimpleMAData[idx] *  (float)(1 / simpleMALag[currentRange-1]));
-	return datum;
-}
-float PID::getReadoutDatum(void)
-{
-	return 0;
-}
+
 float PID::getRawUpdateRate(void)
 {
 	return updateRate;
-}
-float PID::getReadoutUpdateRate(void)
-{
-	uint64_t currentTime = bcm2835_st_read();
-	if(desiredUpdateRate == 0)	desiredUpdateRate = 5;
-	uint64_t nextTime = lastUpdateTime + (1000000/desiredUpdateRate);
-	if(currentTime>=nextTime) {
-		readoutUpdateRate = getRawUpdateRate();
-		lastUpdateTime = currentTime;
-	}
-
-	return readoutUpdateRate;
 }
 
 void PID::update (string serialData, uint64_t updateTime) {
@@ -367,28 +344,8 @@ void PID::update (string serialData, uint64_t updateTime) {
 				}
 				if(rangeFound==true) {
 					value = value * rangeScaling[currentRange-1];	// Apply scaling of current range
-					//if(debug) cout << "Value scaled to range: " << value <<endl;
-					//if(debug) cout << "Renge units: " << EngUnits[currentRange-1] << endl;
-					float* currentSimpleMAData = simpleMAData[currentRange-1];
-					float* currentWeightedMAData = weightedMAData[currentRange-1];
-					// If the range has changed this time around, reset MA data to current value
-					int idx;
-					if(currentRange!=lastRange) {
-						idx = 0;
-						for(;idx<simpleMALag[currentRange-1];idx++) currentSimpleMAData[idx] = value;
-						idx = 0;
-						for(;idx<weightedMALag[currentRange-1];idx++) currentWeightedMAData[idx] = value;
-					}
-					// Shift all simple MA data values down one, put current value in last position
-					idx = 1;							
-					for(;idx<simpleMALag[currentRange-1];idx++)
-						currentSimpleMAData[idx-1] = currentSimpleMAData[idx];	// Shift data, overwrite oldest
-					currentSimpleMAData[simpleMALag[currentRange-1]-1] = value;	// Add latest value to array
-					// Shift all weighted MA data values down one, put current value in last position
-					idx = 1;
-					for(;idx<weightedMALag[currentRange-1];idx++)	
-						currentWeightedMAData[idx-1] = currentWeightedMAData[idx];	// Shift data, overwrite oldest
-					currentWeightedMAData[weightedMALag[currentRange-1]-1] = value;	// Add latest value to array
+					
+					// looks like value is the desired data
 				}
 				else {
 					cout << "Error: Data not inside any range. " << endl;
@@ -460,7 +417,7 @@ int PID::getNumBits(void) {
 	return numDataBytes*8;
 }
 
-
+*/
 
 
 
