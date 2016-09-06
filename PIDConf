@@ -1,5 +1,62 @@
 # PID Configuration file
 
+TEST{
+	full_name = "long name for detail display purposes";
+	short_name = "shorter name for selection purposes";
+	command = "what should be sent to ELM327";
+	id = "TEST";
+	num_data_bytes = "4";
+	num_elements = "2";
+	element1 {
+		type = "value";
+		name = "name";
+		description = "description";
+		min_val = "0";
+		max_val = "100";
+		num_bytes = "2";
+		start_byte = "A";
+		A_gain = "1.0";
+		A_offset = "-1.0";
+		B_gain = "1.0";
+		B_offset = "-1.0";
+		total_gain = "2.0";
+		total_offset = "-2.0";
+		num_ranges = "1";
+		range1{
+			scaling = "1.0";
+			range_start = "0";
+			range_stop = "50";
+			eng_units = "pct1";
+		};
+	};
+	
+	element2 {
+		type = "value";
+		name = "name2";
+		description = "description2";
+		min_val = "0";
+		max_val = "100";
+		num_bytes = "2";
+		start_byte = "C";
+		C_gain = "2.0";
+		C_offset = "-2.0";
+		D_gain = "2.0";
+		D_offset = "-2.0";
+		total_gain = "4.0";
+		total_offset = "-4.0";
+		num_ranges = "1";
+		range1{
+			scaling = "1.0";
+			range_start = "0";
+			range_stop = "50";
+			eng_units = "pct1";
+		};
+	};
+	
+};
+
+
+
 0100 {
 	fullName = "Supported PIDs 0101 - 0120";
 	shortName = "PIDs 0101-0120";

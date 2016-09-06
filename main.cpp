@@ -223,6 +223,8 @@ int main() {
 	 // PID TEST
 	 
 	 PID TestPID("TEST");
+	 TestPID.update("4EST01020203", loopTime);
+
 	 cout << "Successfully created Test PID" << endl;
 	 
 	 // END PID TEST

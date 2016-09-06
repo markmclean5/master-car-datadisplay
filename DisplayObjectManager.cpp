@@ -48,9 +48,9 @@ void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& G
 				string* PIDSupportLabels = new string[numSupportPIDs*31];
 				for(std::vector<PID>::iterator it = SupportPIDs.begin(); it != SupportPIDs.end(); it++)  {
 					for(int p = 0; p<30; p++) {
-						PIDSupportStates[PIDidx] = (it)->getBitPositionValue(p);
-						PIDSupportNames[PIDidx] = (it)->getBitPositionName(p);
-						PIDSupportLabels[PIDidx] = (it)->getBitPositionLabel(p);
+						PIDSupportStates[PIDidx] = (it)->getBitValue("element", p);
+						PIDSupportNames[PIDidx] = (it)->getBitName("element", p);
+						PIDSupportLabels[PIDidx] = (it)->getBitLabel("element", p);
 						
 						if(PIDSupportStates[PIDidx]) {
 							Menus.back().addItem(PIDSupportNames[PIDidx], PIDSupportLabels[PIDidx]);

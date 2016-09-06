@@ -109,10 +109,10 @@ void ConnectionManager(uint64_t loopTime , Serial* ELMSerial, ConnectionStatus* 
 		if(!resp.empty()) {
 			SupportPIDs.back().update(resp, loopTime);
 			
-			cout << " we think 0120 support state is here: " << SupportPIDs.back().getBitPositionName(31) << endl;
+			cout << " we think 0120 support state is here: " << SupportPIDs.back().getBitName("element", 31) << endl;
 		
 			// Move on to next PID support request
-			if(SupportPIDs.back().getBitPositionValue(31) && *currentPIDSupportRequest < 160) {
+			if(SupportPIDs.back().getBitValue("element",31) && *currentPIDSupportRequest < 160) {
 				*PIDSupportRequestStatus = unknown;
 				*currentPIDSupportRequest += 20;
 			}

@@ -40,7 +40,9 @@ private:	// Class Private properties
 	int numValueElements;		// Number of value elements in the PID (type "value" in config file)
 	int numBitEncodedElements;	// Number of bit-encoded elements in the PID (type "bit-encoded" in config file)
 	int numEnumeratedElements;	// Number of enumerated-elements in the PID (type "enumerated" in config file)
-	std::string* types;				// Type of each element in the PID
+	std::string* elementTypes;				// Type of each element in the PID
+	std::string* elementNames;				// Name of each element in the PID
+	std::string* elementDescriptions;		// Brief description of each element in the PID
 
 
 	// Attributes of "value" type element
@@ -89,12 +91,11 @@ private:	// Class Private properties
 public:		// Class members
 	PID(std::string); 							// PID constructor, accepts name of identifer to find PID configuration)
 
-	/* --- Test constructor and configure only
-	
+
 	// Get information about the PID and data elements
 	int getNumPIDElements(void);							// Get the number of elements contained in the PID
-	string getPIDElementName(int);							// Get the (name string) of an element (#)
-	string getPIDElementType(int);							// Get the (type string) of an element (#)
+	std::string getPIDElementName(int);							// Get the (name string) of an element (#)
+	std::string getPIDElementType(int);							// Get the (type string) of an element (#)
 
 	// Get data from value elements
 	float getValue(std::string);							// Get raw datum for the provided element name
@@ -119,8 +120,7 @@ public:		// Class members
 	std::string getCommand(void);							// Get command (to issue to ELM)
 	void update(std::string, uint64_t);						// Update method (serial data, time)
 
-	*/
-	
+
 	std::string command;
 	
 
@@ -137,6 +137,8 @@ public:		// Class members
 private:	// Class private members
 
 	void configure(std::string);							// PID configure method
+	
+	float* values;
 
 };
 #endif
