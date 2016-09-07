@@ -313,7 +313,7 @@ void PID::update (string serialData, uint64_t updateTime) {				// Update method 
 		serialData.erase(end_pos, serialData.end());		// Remove spaces from serial data
 		size_t found = serialData.find(responseID);
 		if(found != std::string::npos) {
-			float value = 0;
+			
 			string dataByteString = serialData.substr(found+4, numDataBytes*2);
 			//cout << "Data Byte String - " << dataByteString << endl;
 			//cout << "num data bytes: " << numDataBytes << endl;
@@ -328,18 +328,18 @@ void PID::update (string serialData, uint64_t updateTime) {				// Update method 
 						
 						cout << "Start byte " << valueStartBytes[valueElementIdx] << " -> " << startBytePosition << endl;
 						values[valueElementIdx] = 0;
-						for(int i=startBytePosition;i<numValueBytes[valueElementIdx];i++) {
+						for(int i = 0; i < numValueBytes[valueElementIdx]; i++) {
 							cout << "byte gain " << byteGains[valueElementIdx][i] << endl;
 							cout << "byte offset " << byteOffsets[valueElementIdx][i] << endl;
-							cout << " substring " <<  dataByteString.substr(2*i, 2).c_str() << endl;
-							cout << "stroutl " << strtoul(dataByteString.substr(2*i, 2).c_str(), NULL, 16) << endl;
-							value += (byteGains[valueElementIdx][i]*strtoul(dataByteString.substr(2*i, 2).c_str(), NULL, 16) + byteOffsets[valueElementIdx][i]);
-							cout << "value before total " << value << endl;
+							cout << " substring " <<  dataByteString.substr(2*(i+startBytePosition), 2).c_str() << endl;
+							cout << "stroutl " << strtoul(dataByteString.substr(2*(i+startBytePosition), 2).c_str(), NULL, 16) << endl;
+							values[valueElementIdx] += (byteGains[valueElementIdx][i]*strtoul(dataByteString.substr(2*(i+startBytePosition), 2).c_str(), NULL, 16) + byteOffsets[valueElementIdx][i]);
+							cout << "value before total " << values[valueElementIdx]  << endl;
 						}
 						cout << "TotalGain " << TotalGains[valueElementIdx] << endl;
 						cout << "TotalOffset " << TotalOffsets[valueElementIdx] << endl;
-						value = (value*TotalGains[valueElementIdx]) + TotalOffsets[valueElementIdx];
-						cout << " Value calculated to be: " << value <<endl;
+						values[valueElementIdx] = (values[valueElementIdx]*TotalGains[valueElementIdx]) + TotalOffsets[valueElementIdx];
+						cout << " Value calculated to be: " << values[valueElementIdx] <<endl;
 						valueElementIdx++;
 				} // End updating value element
 				
