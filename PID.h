@@ -68,7 +68,7 @@ private:	// Class Private properties
 
 
 	// Attributes of "bit-encoded" type element
-	uint32_t* bitValues;		// 32 bit storage for bit states (entire PID, all elements)
+	uint32_t payload;		// 32 bit storage for bit states (entire PID, all elements)
 	int* numBitEncodedBits;		// number of bits in each element
 	int* bitEncodedStartBits;		// start bit position for each element
 	
@@ -104,9 +104,13 @@ public:		// Class members
 	// Get data from bit-encoded elements
 	int getBitsEncoded(std::string);						// Get number of bits of a provided element name
 	std::string getBitName(std::string, int);				// Get (name string) of provided bit (#) of provided elenment
-	bool getBitNameValue(std::string, std::string);			// Get value (t/f) of provided bit name of provided element name
-	std::string getBitNameState(std::string, std::string);	// Get (state string) of provided bit name of provided element name
 	bool getBitValue(std::string, int);						// Get value (t/f) of provided bit (#) of provided element name
+	bool getBitNameValue(std::string, std::string);			// Get value (t/f) of provided bit name of provided element name
+	
+	
+	std::string getBitNameState(std::string, std::string);	// Get (state string) of provided bit name of provided element name
+	
+	
 	std::string getBitState(std::string, int);				// Get (state string) of provided bit (#) of provided element name
 	std::string getBitLabel(std::string, int);				// Get (label string) of provided bit (#) of provided element
 	

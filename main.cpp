@@ -227,6 +227,8 @@ int main() {
 
 	 cout << "Successfully created Test PID" << endl;
 	 
+	 cout << " Getting value for name2 " << TestPID.getValue("name7") << endl;
+	 
 	 // END PID TEST
 	 
 	 

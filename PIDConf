@@ -6,7 +6,7 @@ TEST{
 	command = "what should be sent to ELM327";
 	id = "TEST";
 	num_data_bytes = "4";
-	num_elements = "2";
+	num_elements = "3";
 	element1 {
 		type = "value";
 		name = "name";
@@ -36,12 +36,10 @@ TEST{
 		description = "description2";
 		min_val = "0";
 		max_val = "100";
-		num_bytes = "2";
+		num_bytes = "1";
 		start_byte = "C";
 		C_gain = "7.0";
 		C_offset = "8.0";
-		D_gain = "9.0";
-		D_offset = "10.0";
 		total_gain = "11.0";
 		total_offset = "12.0";
 		num_ranges = "1";
@@ -51,6 +49,27 @@ TEST{
 			range_stop = "50";
 			eng_units = "pct1";
 		};
+	};
+	
+	element3 {
+		type = "bit-encoded";
+		name = "name3";
+		description = "description3";
+		num_bits = "3";
+		start_bit = "D6";
+		
+		D6_name = "NameD6";
+		D6_0state = "D6 is set to 0";
+		D6_1state = "D6 is set to 1";
+		D6_label = "whatever D6 really means";
+		D5_name = "NameD5";
+		D5_0state = "D5 is set to 0";
+		D5_1state = "D5 is set to 1";
+		D5_label = "whatever D5 really means";
+		D4_name = "NameD4";
+		D4_0state = "D4 is set to 0";
+		D4_1state = "D4 is set to 1";
+		D4_label = "whatever D4 really means";
 	};
 	
 };

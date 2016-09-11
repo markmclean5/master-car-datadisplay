@@ -98,12 +98,11 @@ void PID::configure(string ident) {
 			rangeStarts = new float*[numValueElements];
 			rangeStops = new float*[numValueElements];
 			EngUnits = new string*[numValueElements];
-
 		}
 
 		// Dynamic creation of bit encoded element attributes
 		if(numBitEncodedElements != 0) {
-			bitValues = new uint32_t[numBitEncodedElements];
+			payload = 0;
 			numBitEncodedBits = new int[numBitEncodedElements];
 			bitEncodedStartBits = new int[numBitEncodedElements];
 			
@@ -140,31 +139,26 @@ void PID::configure(string ident) {
 				elementTypes[currentElement-1] = elementType;
 				elementNames[currentElement-1] = parseString(cfg, PIDName, currentElementScope, ".name");
 				elementDescriptions[currentElement-1] = parseString(cfg, PIDName, currentElementScope, ".description");
-				if(elementType.compare("value") == 0) {									// Value type PID element configuration
+				
+				// Value type PID element configuration
+				if(elementType.compare("value") == 0) {									
 					cout << "Value type element being parsed!" << endl;
 					// Value max and min (before range scalings)
 					supportedMinVals[valueElementIdx] = parseFloat(cfg, PIDName, currentElementScope, ".min_val");
 					supportedMaxVals[valueElementIdx] = parseFloat(cfg, PIDName, currentElementScope, ".max_val");
-					
 					// Number of bytes
 					numValueBytes[valueElementIdx] = parseInt(cfg, PIDName, currentElementScope, ".num_bytes");
-
 					// Allocate space for gains and offsets for each byte
 					byteGains[valueElementIdx] = new float[numValueBytes[valueElementIdx]];
 					byteOffsets[valueElementIdx] = new float[numValueBytes[valueElementIdx]];
-					
 					// Value start byte ('A', 'B'....)
 					valueStartBytes[valueElementIdx] = parseString(cfg, PIDName, currentElementScope, ".start_byte")[0];		// Trying to get first character of string
 					cout << "Value type element starts at byte " << valueStartBytes[valueElementIdx] << endl;
-					
 					// Parse all byte gains and offsets
 					for(int parseByte = 0; parseByte < numValueBytes[valueElementIdx]; parseByte++) {
-						
 						string attr = ".";
 						char byteScope = valueStartBytes[valueElementIdx]+parseByte;
 						attr+=byteScope;
-						
-						
 						byteGains[valueElementIdx][parseByte] = parseFloat(cfg, PIDName, currentElementScope, attr + "_gain");
 						byteOffsets[valueElementIdx][parseByte] = parseFloat(cfg, PIDName, currentElementScope, attr + "_offset");
 					}
@@ -192,7 +186,50 @@ void PID::configure(string ident) {
 						EngUnits[valueElementIdx][currentParseRange-1] = parseString(cfg, PIDName + "." + currentElementScope, currentRangeScope, ".eng_units");
 					}
 					valueElementIdx++;
-				} // End of value element parsing loop
+				} // End of value element parsing
+				
+				// Value type PID element configuration
+				if(elementType.compare("bit-encoded") == 0) {									// Value type PID element configuration
+					cout << "Bit-encoded type element being parsed!" << endl;
+					numBitEncodedBits[bitEncodedElementIdx] = parseInt(cfg, PIDName, currentElementScope, ".num_bits");
+					bitNames[bitEncodedElementIdx] = new string[numBitEncodedBits[bitEncodedElementIdx]];
+					bit0States[bitEncodedElementIdx] = new string[numBitEncodedBits[bitEncodedElementIdx]];
+					bit1States[bitEncodedElementIdx] = new string[numBitEncodedBits[bitEncodedElementIdx]];
+					bitLabels[bitEncodedElementIdx] = new string[numBitEncodedBits[bitEncodedElementIdx]];
+					
+					string startBitString =  parseString(cfg, PIDName, currentElementScope, ".start_bit");
+					
+					int totalDataBits = numDataBytes * 8; 							// Total number of data bits in entire PID
+					int byteNumber = (int)startBitString[0] - 65; 				// ASCII 'A" is 65 -> 0, 'B'->1
+					int bitNumber = (int )startBitString[1] - 48;
+					
+					bitEncodedStartBits[bitEncodedElementIdx] = totalDataBits - 8 * byteNumber - (7 - bitNumber) - 1;
+					
+					cout << "Start bit " << startBitString << " corresponds with data bit position " << bitEncodedStartBits[bitEncodedElementIdx] << endl;
+					
+					char start[] = {startBitString[0], startBitString[1], 0};			// null-terminated character arrat for 
+					for(int idx = 0; idx < numBitEncodedBits[bitEncodedElementIdx]; idx++) {
+						cout << "Parse " << start << endl;
+
+						bitNames[bitEncodedElementIdx][idx] = parseString(cfg, PIDName + "." + currentElementScope, string(start) + "_name");
+						bit0States[bitEncodedElementIdx][idx] = parseString(cfg, PIDName + "." + currentElementScope, string(start) + "_0state");
+						bit1States[bitEncodedElementIdx][idx] = parseString(cfg, PIDName + "." + currentElementScope, string(start) + "_1state");
+					
+						
+						// Modify start prefix (bit string)
+						if(start[1] == '0') {
+							start[0]++;
+							start[1] = '7';
+						}
+						else {
+							start[1]--;
+						}
+					}
+					
+					
+					
+					bitEncodedElementIdx++;
+				} // End of bit-encoded  element parsing 
 				
 				
 			} // End of element-parsing loooop
@@ -282,15 +319,6 @@ void PID::configure(string ident) {
 	cout << "Reached end of configure!" << endl;
 }
 
-bool PID::getBitValue(string element, int bit){						// Get value (t/f) of provided bit (#) of provided element name
-	return false;
-}
-string  PID::getBitName(string element, int bit) {				// Get (name string) of provided bit (#) of provided elenment
-	return "";
-}
-string PID::getBitLabel(string element, int bit) {				// Get (label string) of provided bit (#) of provided element
-	return "";
-}
 
 string PID::getCommand(void) {							// Get command (to issue to ELM)
 	return "";
@@ -321,8 +349,11 @@ void PID::update (string serialData, uint64_t updateTime) {				// Update method 
 			int valueElementIdx = 0;
 			int bitEncodedElementIdx = 0;
 			int enumElementIdx = 0;
-			
+
+			// Update each element in PID
 			for(int currentElement = 0; currentElement < numElements; currentElement++) {
+				
+				// Value element update
 				if(elementTypes[currentElement].compare("value") == 0) {
 						int startBytePosition = (int)valueStartBytes[valueElementIdx] - 65; 				// ASCII 'A" is 65 -> 0, 'B'->1
 						
@@ -343,10 +374,39 @@ void PID::update (string serialData, uint64_t updateTime) {				// Update method 
 						valueElementIdx++;
 				} // End updating value element
 				
+				
+				// Bit encoded element update
+				if(elementTypes[currentElement].compare("bit-encoded") == 0) {
+					cout << "updating bit-encoded element" << endl;
+					cout << "  substring: " << dataByteString.substr(0, 2*numDataBytes) << endl;
+					payload =  strtoul(dataByteString.substr(0, 2*numDataBytes).c_str(), NULL, 16);
+				} // End updating bit-encoded element
+				
 			} // End updating all elements
 				
 		}
 	}
+}
+
+
+// Get element value of "value" type
+float PID::getValue(string elementName) {
+	// loop through PID elements, return a
+	int valueElementIdx = 0;
+	float result = NAN;
+	for(int elementIdx = 0; elementIdx < numElements; elementIdx++) {
+		if(elementNames[elementIdx].compare(elementName) == 0) {
+			result = values[valueElementIdx];
+			break;
+		}
+		else if(elementTypes[elementIdx].compare("value") == 0) {
+			valueElementIdx++;
+		}
+	}
+	if(isnan(result)) {
+		cout << "getValue was unable to find element " << elementName << " in PID " << id << endl;
+	}
+	return result;
 }
 			/*
 		
@@ -506,54 +566,130 @@ void PID::update (string serialData, uint64_t updateTime) {
 	cout << "At end of PID update: current range: " << currentRange << endl;
 }
 
+
+
+*/
 // Bit-encoded functions
 
-bool PID::getBitNameValue(string name) {
-	bool val = false;
-	for(int i = 0; i < 8*numDataBytes; i++) {
-		if(name.compare(bitNames[i]) == 0) {
-			val = getBitPositionValue(i);
+int PID::getBitsEncoded(string elementName) {
+	// loop through PID elements
+	int bitEncodedElementIdx = 0;
+	int result = 0;
+	for(int elementIdx = 0; elementIdx < numElements; elementIdx++) {
+		if(elementNames[elementIdx].compare(elementName) == 0) {
+			result = numBitEncodedBits[bitEncodedElementIdx];
 			break;
+		}
+		else if(elementTypes[elementIdx].compare("bit-encoded") == 0) {
+			bitEncodedElementIdx++;
+		}
+	}
+	return result;
+}
+
+string PID::getBitName(string elementName, int bitIndex) {
+	// loop through PID elements
+	int bitEncodedElementIdx = 0;
+	string name = "";
+	for(int elementIdx = 0; elementIdx < numElements; elementIdx++) {
+		if(elementNames[elementIdx].compare(elementName) == 0) {
+			name = bitNames[bitEncodedElementIdx][bitIndex];
+			break;
+		}
+		else if(elementTypes[elementIdx].compare("bit-encoded") == 0) {
+			bitEncodedElementIdx++;
+		}
+	}
+	return name;
+}
+
+bool PID::getBitValue(string elementName, int bitIndex) {
+	// loop through PID elements
+	int bitEncodedElementIdx = 0;
+	bool result = false;
+	for(int elementIdx = 0; elementIdx < numElements; elementIdx++) {
+		if(elementNames[elementIdx].compare(elementName) == 0) {
+			int start = bitEncodedStartBits[bitEncodedElementIdx];
+			result = ((payload >> (31 - start - bitIndex) ) &  1);
+			break;
+		}
+		else if(elementTypes[elementIdx].compare("bit-encoded") == 0) {
+			bitEncodedElementIdx++;
+		}
+	}
+}
+
+
+bool PID::getBitNameValue(string elementName, string bitName) {
+	bool val = false;
+	int bitEncodedElementIdx = 0;
+	for(int elementIdx = 0; elementIdx < numElements; elementIdx++) {
+		if(elementNames[elementIdx].compare(elementName) == 0) {
+			for(int i = 0; i < numBitEncodedBits[bitEncodedElementIdx]; i++) {
+				if(bitName.compare(bitNames[bitEncodedElementIdx][i]) == 0) {
+					val = getBitValue(elementName, i);
+					break;
+				}
+			}
+		}
+		else if(elementTypes[elementIdx].compare("bit-encoded") == 0) {
+			bitEncodedElementIdx++;
 		}
 	}
 	return val;
 }
-string PID::getBitNameState(string name) {
+	
+string PID::getBitNameState(string elementName, string bitName) {
 	string state = "";
-	for(int i = 0; i < 8*numDataBytes; i++) {
-		if(name.compare(bitNames[i]) == 0) {
-			state = getBitPositionState(i);
-			break;
+	int bitEncodedElementIdx = 0;
+	for(int elementIdx = 0; elementIdx < numElements; elementIdx++) {
+		if(elementNames[elementIdx].compare(elementName) == 0) {
+			for(int i = 0; i < numBitEncodedBits[bitEncodedElementIdx]; i++) {
+				if(bitName.compare(bitNames[bitEncodedElementIdx][i]) == 0) {
+					state = getBitState(elementName, i);
+					break;
+				}
+			}
 		}
+		else if(elementTypes[elementIdx].compare("bit-encoded") == 0) {
+			bitEncodedElementIdx++;
+		}
+	return state;
 	}
+}
+
+string PID::getBitState(string elementName, int pos) {
+	string state = "";
+	int bitEncodedElementIdx = 0;
+	for(int elementIdx = 0; elementIdx < numElements; elementIdx++) {
+		if(elementNames[elementIdx].compare(elementName) == 0) {
+			bool val = getBitValue(elementName, pos);
+			if (val) {
+				state = bit1States[bitEncodedElementIdx][pos];
+			}
+			else {
+				state = bit0States[bitEncodedElementIdx][pos];
+			}
+		}
+		else if(elementTypes[elementIdx].compare("bit-encoded") == 0) {
+			bitEncodedElementIdx++;
+		}
+	}	
 	return state;
 }
-bool PID::getBitPositionValue(int pos) {
-	return ((bitValue >> (31-pos) ) &  1);
+
+string PID::getBitLabel(string elementName, int bitIndex) {
+string label = "";
+	int bitEncodedElementIdx = 0;
+	for(int elementIdx = 0; elementIdx < numElements; elementIdx++) {
+		if(elementNames[elementIdx].compare(elementName) == 0) {
+			label = bitLabels[bitEncodedElementIdx][bitIndex];
+		}
+		else if(elementTypes[elementIdx].compare("bit-encoded") == 0) {
+			bitEncodedElementIdx++;
+		}
+	}	
+	return label;
 }
-string PID::getBitPositionState(int pos) {
-	if(getBitPositionValue(pos))
-		return bit1States[pos];
-	else
-		return bit0States[pos];
-
-}
-string PID::getBitPositionName(int pos) {
-	return bitNames[pos];
-}
-
-string PID::getBitPositionLabel(int pos) {
-	return bitLabels[pos];
-}
-
- 
-int PID::getNumBits(void) {
-	return numDataBytes*8;
-}
-
-*/
-
-
-
 
 
