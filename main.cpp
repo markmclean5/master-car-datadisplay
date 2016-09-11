@@ -145,18 +145,18 @@ int main() {
 	Button NumSuportedPIDsButton(350+90, 18, 50, 35, "NumPIDsButton");
 	
 	// ELM connection and ECU connection status
-	ConnectionStatus 	ELMStatus 					= disconnected;
-	uint64_t ELMConnectStartTime 	= 0;
+	ConnectionStatus ELMStatus = disconnected;
+	uint64_t ELMConnectStartTime = 0;
 
 
-	string 						ELMVersion 					= "";
-	ParmStatus 				ELMVersionStat 			= unknown;
-	string 						Protocol 						= "";
-	ParmStatus 				ProtocolStat 				= unknown;
-	ConnectionStatus 	ECUStatus 					= disconnected;
-	int 							ECUConnectTries 		= 0;
-	string 						VIN 								= "";
-	ParmStatus 				VINStat 						= unknown;
+	string ELMVersion = "";
+	ParmStatus ELMVersionStat = unknown;
+	string Protocol = "";
+	ParmStatus ProtocolStat = unknown;
+	ConnectionStatus ECUStatus = disconnected;
+	int ECUConnectTries = 0;
+	string VIN = "";
+	ParmStatus VINStat = unknown;
 	
 	uint64_t lastLoopTime = 0;
 	
@@ -164,7 +164,7 @@ int main() {
 	// PID support 		
 	vector<PID> SupportPIDs;			// PID support queries
 	ParmStatus PIDSupportRequestStatus 	= unknown;
-	int currentPIDSupportRequest 				= 100;
+	int currentPIDSupportRequest = 100;
 	bool PIDSupportRequestsComplete = false;
 
 
@@ -223,12 +223,12 @@ int main() {
 	 // PID TEST
 	 
 	 PID TestPID("TEST");
-	 TestPID.update("4EST01020203", loopTime);
+	 TestPID.update("4EST01020250", loopTime);
 
-	 cout << "Successfully created Test PID" << endl;
-	 
-	 cout << " Getting value for name2 " << TestPID.getValue("name7") << endl;
-	 
+	 for(int i = 0; i < TestPID.numElements; i++) {
+	 	cout << "Element #" << i << ": " << TestPID.elementTypes[i] << " type" << endl;
+	 }
+ 
 	 // END PID TEST
 	 
 	 
@@ -252,7 +252,7 @@ int main() {
 		
 		
 		
-	/*
+
 
 	// Not part of connection manager - generates menu / tables of supported PIDs
 	// PIDSupportRequestsComplete is flag to run once
@@ -269,9 +269,9 @@ int main() {
 		
 		for(std::vector<PID>::iterator it = SupportPIDs.begin(); it != SupportPIDs.end(); it++)  {
 			for(int p = 0; p<30; p++) {
-				PIDSupportStates[PIDidx] = (it)->getBitPositionValue(p);
-				PIDSupportNames[PIDidx] = (it)->getBitPositionName(p);
-				PIDSupportLabels[PIDidx] = (it)->getBitPositionLabel(p);
+				PIDSupportStates[PIDidx] = (it)->getBitValue("supportedPIDs", p);
+				PIDSupportNames[PIDidx] = (it)->getBitName("supportedPIDs", p);
+				PIDSupportLabels[PIDidx] = (it)->getBitLabel("supportedPIDs", p);
 					
 				if(PIDSupportStates[PIDidx]) {
 					numSupportedPIDs++;
@@ -283,7 +283,7 @@ int main() {
 		NumSuportedPIDsButton.setValue(numSupportedPIDs);
 	}
 	
-	*/
+
 	
 	
 	
@@ -302,11 +302,12 @@ int main() {
 		// Mode Management
 		modeManager(&ModeMenu, &loopTouch, &previousMode, &currentMode);
 		
-		/*
+		
 		// Connection Management (ELM, ECU,Protocol detection, PID support request)
 		ConnectionManager( loopTime ,  &ELMSerial,  &ELMStatus, &ELMConnectStartTime, &ELMVersionStat , &ELMVersion, &ECUStatus , &ECUConnectTries, &ProtocolStat , &Protocol , &PIDSupportRequestStatus , &currentPIDSupportRequest, SupportPIDs);
 		
 		
+
 		// PID Vector Management
 		if(PIDSupportRequestStatus == known) {
 			PIDVectorManager(&PIDVectorCurrentState, PIDs, CurrentPID, &numPIDs, &ELMSerial, &currentMode, &secondLastPIDVectorUpdateTime, &lastPIDVectorUpdateTime, &loopTime);
@@ -320,7 +321,7 @@ int main() {
 		Mode 1 - DASHBOARD
 		******************************************************************************************/
 		
-		/*
+		
 		
 		// Dashboard mode run-time
 		if(currentMode == dashboardMode) {
@@ -332,10 +333,10 @@ int main() {
 				(it)->updateTouch(&loopTouch);
 				string name = (it)->getPIDLink();
 				if(it->isTouched()) cout << "Gauge " << name << " is touched!" << endl;
-				auto CurrentGaugePID_It = find_if(PIDs.begin(), PIDs.end(), [&name](PID& obj) {return obj.getCommand().compare(name) == 0;});
+				auto CurrentGaugePID_It = find_if(PIDs.begin(), PIDs.end(), [&name](PID& obj) {return obj.command.compare(name) == 0;});
 				// TODO - Understand and fix
 				if(CurrentGaugePID_It != PIDs.end())
-					(it)->update((CurrentGaugePID_It)->getRawDatum(), (CurrentGaugePID_It)->getEngUnits());
+					(it)->update((CurrentGaugePID_It)->getValue("element1"), (CurrentGaugePID_It)->getValueEngUnits("element1"));
 			}
 			for (std::vector<Menu>::iterator it = DASHBOARD_Menus.begin(); it != DASHBOARD_Menus.end(); it++) {					// Update all menus
 				(it)->update(&loopTouch);
@@ -344,8 +345,7 @@ int main() {
 			DisplayObjectManager(DASHBOARD_HotButtons, DASHBOARD_Gauges, PIDs, SupportPIDs, &PIDSupportRequestStatus, DASHBOARD_Menus);								// Run DisplayObjectManager (current page dashboard hotbuttons, display objects, and PIDs)		
 		} // End Mode 1
 
-		*/
-		
+			
 		/******************************************************************************************
 		Mode 2 - PLOT
 		******************************************************************************************/
@@ -422,7 +422,7 @@ int main() {
 		Mode 8 - DEVELOPMENT
 		******************************************************************************************/
 		
-		/*
+		
 		if(currentMode == developmentMode) {
 		
 		// Connection, protocol, and PID support statusing display
@@ -468,9 +468,6 @@ int main() {
 		} // End Mode 8
 		
 		
-		*/
-		
-
 		End();				// Write picture to screen
 		
 	}  // E N D    M A I N    W H I L E

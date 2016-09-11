@@ -99,7 +99,7 @@ void ConnectionManager(uint64_t loopTime , Serial* ELMSerial, ConnectionStatus* 
 		string requestPIDString = "0";
 		requestPIDString.append(std::to_string(*currentPIDSupportRequest) );	//"0100" first time around
 		SupportPIDs.emplace_back(requestPIDString);
-		ELMSerial->serialWrite(SupportPIDs.back().getCommand());
+		ELMSerial->serialWrite(SupportPIDs.back().command);
 		*PIDSupportRequestStatus = requested;
 	}
 	
@@ -109,10 +109,10 @@ void ConnectionManager(uint64_t loopTime , Serial* ELMSerial, ConnectionStatus* 
 		if(!resp.empty()) {
 			SupportPIDs.back().update(resp, loopTime);
 			
-			cout << " we think 0120 support state is here: " << SupportPIDs.back().getBitName("element", 31) << endl;
+			cout << " we think 0120 support state is here: " << SupportPIDs.back().getBitName("supportPIDs", 31) << endl;
 		
 			// Move on to next PID support request
-			if(SupportPIDs.back().getBitValue("element",31) && *currentPIDSupportRequest < 160) {
+			if(SupportPIDs.back().getBitValue("supportPIDs",31) && *currentPIDSupportRequest < 160) {		// should be < 160
 				*PIDSupportRequestStatus = unknown;
 				*currentPIDSupportRequest += 20;
 			}

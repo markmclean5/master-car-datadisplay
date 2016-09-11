@@ -21,7 +21,7 @@ private:	// Class Private properties
 
 	std::string fullName;
 	std::string shortName;
-	std::string id;
+	
 	
 	// Class properties
 	bool debug;
@@ -35,15 +35,6 @@ private:	// Class Private properties
 
 	
 	int numDataBytes;
-
-	int numElements;			// Total number of data elements in the ("num_elements" in config file)
-	int numValueElements;		// Number of value elements in the PID (type "value" in config file)
-	int numBitEncodedElements;	// Number of bit-encoded elements in the PID (type "bit-encoded" in config file)
-	int numEnumeratedElements;	// Number of enumerated-elements in the PID (type "enumerated" in config file)
-	std::string* elementTypes;				// Type of each element in the PID
-	std::string* elementNames;				// Name of each element in the PID
-	std::string* elementDescriptions;		// Brief description of each element in the PID
-
 
 	// Attributes of "value" type element
 	char* valueStartBytes;			// Byte at which each element starts
@@ -91,12 +82,6 @@ private:	// Class Private properties
 public:		// Class members
 	PID(std::string); 							// PID constructor, accepts name of identifer to find PID configuration)
 
-
-	// Get information about the PID and data elements
-	int getNumPIDElements(void);							// Get the number of elements contained in the PID
-	std::string getPIDElementName(int);							// Get the (name string) of an element (#)
-	std::string getPIDElementType(int);							// Get the (type string) of an element (#)
-
 	// Get data from value elements
 	float getValue(std::string);							// Get raw datum for the provided element name
 	std::string getValueEngUnits(std::string);				// Get engineering units for the provided element name
@@ -121,28 +106,30 @@ public:		// Class members
 
 	// General PID operation
 	float getRawUpdateRate(void);							// Get update rate (Hz, between update() calls)
-	std::string getCommand(void);							// Get command (to issue to ELM)
 	void update(std::string, uint64_t);						// Update method (serial data, time)
 
-
 	std::string command;
-	
-
+	std::string id;
+	int numElements;										// Total number of data elements in the ("num_elements" in config file)
+	int numValueElements;									// Number of value elements in the PID (type "value" in config file)
+	int numBitEncodedElements;								// Number of bit-encoded elements in the PID (type "bit-encoded" in config file)
+	int numEnumeratedElements;								// Number of enumerated-elements in the PID (type "enumerated" in config file)
+	std::string* elementTypes;								// Type of each element in the PID
+	std::string* elementNames;								// Name of each element in the PID
+	std::string* elementDescriptions;						// Brief description of each element in the PID
 
 	// Datalinks - count number of elements for each mode which rely on data from this PID
 	int dashboard_datalinks;
 	int plot_datalinks;
 	int log_datalinks;
 	
-	
-
-
-
 private:	// Class private members
 
 	void configure(std::string);							// PID configure method
 	
 	float* values;
+
+
 
 };
 #endif

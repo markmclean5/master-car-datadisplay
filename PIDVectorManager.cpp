@@ -37,7 +37,7 @@ void PIDVectorManager(PIDVectorState* PIDVectorCurrentState, std::vector<PID>& P
 					(*currentMode == plotMode && CurrentPID->plot_datalinks != 0) ||
 					(*currentMode == logMode && CurrentPID->log_datalinks != 0)) {
 				//cout << "Requirements met to update PID - setting vector busy" << endl;
-				ELMSerialPtr->serialWrite((CurrentPID)->getCommand());		// Request PID data if necessary
+				ELMSerialPtr->serialWrite((CurrentPID)->command);		// Request PID data if necessary
 				*PIDVectorCurrentState = busy;
 			}
 			else {
