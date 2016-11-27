@@ -31,6 +31,7 @@ PID::PID(string PIDid) {
 	dashboard_datalinks = 0;
 	plot_datalinks = 0;
 	log_datalinks = 0;
+	temp_datalinks = 0;
 
 }
 
@@ -42,7 +43,7 @@ void PID::configure(string ident) {
 		cfg->parse("/home/pi/master-car-datadisplay/PIDConf");
 		string PIDName = ident;
 		
-		
+		id = parseString(cfg, PIDName, "id");
 		fullName = parseString(cfg, PIDName, "full_name");
 		shortName = parseString(cfg, PIDName, "short_name");
 		
@@ -90,6 +91,8 @@ void PID::configure(string ident) {
 			TotalGains = new float[numValueElements];
 			TotalOffsets = new float[numValueElements];
 			values = new float[numValueElements];
+			currentRanges = new int[numValueElements];
+			lastRanges = new int[numValueElements];
 			
 			// To be further allocated later on when number of ranges for each element are known
 			byteGains = new float*[numValueElements];
@@ -250,8 +253,8 @@ void PID::configure(string ident) {
 }
 				
 void PID::update (string serialData, uint64_t updateTime) {				// Update method (serial data, time)
-	cout << "PID update called for: " << shortName << endl;
-	cout << "  With " << serialData << endl;
+	//cout << "PID update called for: " << shortName << endl;
+	//cout << "  With " << serialData << endl;
 	currentTime = updateTime;
 	uint64_t timeDelta = currentTime - lastTime;
 	lastTime = currentTime;
@@ -281,28 +284,50 @@ void PID::update (string serialData, uint64_t updateTime) {				// Update method 
 				if(elementTypes[currentElement].compare("value") == 0) {
 						int startBytePosition = (int)valueStartBytes[valueElementIdx] - 65; 				// ASCII 'A" is 65 -> 0, 'B'->1
 						
-						cout << "Start byte " << valueStartBytes[valueElementIdx] << " -> " << startBytePosition << endl;
+						//cout << "Start byte " << valueStartBytes[valueElementIdx] << " -> " << startBytePosition << endl;
 						values[valueElementIdx] = 0;
 						for(int i = 0; i < numValueBytes[valueElementIdx]; i++) {
-							cout << "byte gain " << byteGains[valueElementIdx][i] << endl;
-							cout << "byte offset " << byteOffsets[valueElementIdx][i] << endl;
-							cout << " substring " <<  dataByteString.substr(2*(i+startBytePosition), 2).c_str() << endl;
-							cout << "stroutl " << strtoul(dataByteString.substr(2*(i+startBytePosition), 2).c_str(), NULL, 16) << endl;
+							//cout << "byte gain " << byteGains[valueElementIdx][i] << endl;
+							//cout << "byte offset " << byteOffsets[valueElementIdx][i] << endl;
+							//cout << " substring " <<  dataByteString.substr(2*(i+startBytePosition), 2).c_str() << endl;
+							//cout << "stroutl " << strtoul(dataByteString.substr(2*(i+startBytePosition), 2).c_str(), NULL, 16) << endl;
 							values[valueElementIdx] += (byteGains[valueElementIdx][i]*strtoul(dataByteString.substr(2*(i+startBytePosition), 2).c_str(), NULL, 16) + byteOffsets[valueElementIdx][i]);
-							cout << "value before total " << values[valueElementIdx]  << endl;
+							//cout << "value before total " << values[valueElementIdx]  << endl;
 						}
-						cout << "TotalGain " << TotalGains[valueElementIdx] << endl;
-						cout << "TotalOffset " << TotalOffsets[valueElementIdx] << endl;
+						//cout << "TotalGain " << TotalGains[valueElementIdx] << endl;
+						//cout << "TotalOffset " << TotalOffsets[valueElementIdx] << endl;
 						values[valueElementIdx] = (values[valueElementIdx]*TotalGains[valueElementIdx]) + TotalOffsets[valueElementIdx];
-						cout << " Value calculated to be: " << values[valueElementIdx] <<endl;
+						//cout << " Value calculated to be: " << values[valueElementIdx] <<endl;
+						// Determine current range
+						int range = 0;
+						bool rangeFound = false;
+						while(!rangeFound) {
+							if(range==numRanges[valueElementIdx]) break;
+							if(((values[valueElementIdx]>=rangeStarts[valueElementIdx][range]) && (values[valueElementIdx]<rangeStops[valueElementIdx][range])) ||
+								((values[valueElementIdx]>=rangeStops[valueElementIdx][range]) && (values[valueElementIdx]<rangeStarts[valueElementIdx][range]))) {
+								lastRanges[valueElementIdx] = currentRanges[valueElementIdx];
+								currentRanges[valueElementIdx] = range+1;
+								rangeFound = true;
+							}
+							range++;
+						}
+						if(rangeFound==true) {
+							values[valueElementIdx] = values[valueElementIdx] * rangeScalings[valueElementIdx][currentRanges[valueElementIdx]-1];	// Apply scaling of current range
+							
+							// looks like value is the desired data
+						}
+						else {
+							cout << "Error: Data not inside any range. " << endl;
+							currentRanges[valueElementIdx]=1;
+						}
 						valueElementIdx++;
 				} // End updating value element
 				
 				
 				// Bit encoded element update
 				if(elementTypes[currentElement].compare("bit-encoded") == 0) {
-					cout << "updating bit-encoded element" << endl;
-					cout << "  substring: " << dataByteString.substr(0, 2*numDataBytes) << endl;
+					//cout << "updating bit-encoded element" << endl;
+					//cout << "  substring: " << dataByteString.substr(0, 2*numDataBytes) << endl;
 					payload =  strtoul(dataByteString.substr(0, 2*numDataBytes).c_str(), NULL, 16);
 				} // End updating bit-encoded element
 				
@@ -484,7 +509,7 @@ string PID::getValueEngUnits(string elementName) {
 	string units = "";
 	for(int elementIdx = 0; elementIdx < numElements; elementIdx++) {
 		if(elementNames[elementIdx].compare(elementName) == 0) {
-			units = EngUnits[valueElementIdx][currentRanges[valueElementIdx]];
+			units = EngUnits[valueElementIdx][currentRanges[valueElementIdx]-1];
 			break;
 		}
 		else if(elementTypes[elementIdx].compare("value") == 0) {

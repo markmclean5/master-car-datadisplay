@@ -122,6 +122,7 @@ public:		// Class members
 	int dashboard_datalinks;
 	int plot_datalinks;
 	int log_datalinks;
+	int temp_datalinks;
 	
 private:	// Class private members
 

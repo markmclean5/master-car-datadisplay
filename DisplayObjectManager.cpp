@@ -2,7 +2,7 @@
 
 using namespace std;
 
-void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& Gauges, std::vector<PID>& PIDs, std::vector<PID>& SupportPIDs, ParmStatus* PIDSupportRequestStatus, std::vector<Menu>& Menus){
+void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& Gauges, std::vector<PID>& PIDs, std::vector<PID>& SupportPIDs, ParmStatus* PIDSupportRequestStatus, std::vector<Menu>& Menus, std::vector<TextView>& TextViews){
 
 	int width = 800;
 	int height = 480;
@@ -29,14 +29,12 @@ void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& G
 				hb->touchDisable();
 			for (std::vector<Gauge>::iterator g = Gauges.begin(); g != Gauges.end(); g++)
 				g->touchDisable();
-			Menus.emplace_back(width/6, (height/2)-30, (width/3) - 10, height-70, "HOTBUTTON_GroupMenu");
+			
+			Menus.emplace_back(width/2, 45, (width)- 20, 60, "HOTBUTTON_DisplayObjectMenu");
+			Menus.emplace_back(width/12, (height/2)+12, (width/6) - 10, height-125, "HOTBUTTON_GroupMenu");
 			string defaultGroup = "standardPIDMenu";
 			Menus.back().selectButton(defaultGroup);
-			Menus.emplace_back(width-width/6, (height/2)-30, (width/3)- 10, height-70, "HOTBUTTON_DisplayObjectMenu");
-			Menus.emplace_back(width/2, (height/2)-30, (width/3)- 10, height-70, defaultGroup);
-			
-			
-			
+			Menus.emplace_back(width/2 -width/6, (height/2)+12, (width/3)- 10, height-125, defaultGroup);
 			
 			// Not part of connection manager - generates menu / tables of supported PIDs
 			// PIDSupportRequestsComplete is flag to run once
@@ -76,20 +74,78 @@ void DisplayObjectManager(std::vector<Button>& HotButtons, std::vector<Gauge>& G
 		auto HOTBUTTON_ParameterMenu_It = find_if(Menus.begin(), Menus.end(), [&type](const Menu& obj) {return obj.menuType.compare(type) == 0;});
 
 
+		// Go through all menus and select pressed buttons
 		for (std::vector<Menu>::iterator currentMenu = Menus.begin(); currentMenu != Menus.end(); currentMenu++) {
 			string pressedButtonName = currentMenu->getPressedButtonName();
 			if(!pressedButtonName.empty()) currentMenu->selectButton(pressedButtonName);
 		}
-		
+				
 		if(HOTBUTTON_GroupMenu_It->getSelectedButtonName().compare(HOTBUTTON_ParameterMenu_It->menuIdentifier) != 0) {
 			Menus.erase(HOTBUTTON_ParameterMenu_It);
 			Menus.emplace_back(width/2, (height/2)-30, (width/3)- 10, height-70, HOTBUTTON_GroupMenu_It->getSelectedButtonName());
 			type = HOTBUTTON_GroupMenu_It->getSelectedButtonName();
 			HOTBUTTON_ParameterMenu_It = find_if(Menus.begin(), Menus.end(), [&type](const Menu& obj) {return obj.menuType.compare(type) == 0;});
 		}
-
 		
+		
+		// If PID Group menu selected (std/ext) and parameter (specific PID selected), display textview with PID data
+		if(!HOTBUTTON_GroupMenu_It->getSelectedButtonName().empty()
+			&& !HOTBUTTON_ParameterMenu_It->getSelectedButtonName().empty()) {
+				
+			
+			if(TextViews.size()==0) {
+				// Check if PID already exists within the PID vector
+				std::vector<PID>::iterator p = PIDs.begin();
+				for (;p != PIDs.end(); p++){
+					if(p->command.compare(HOTBUTTON_ParameterMenu_It->getSelectedButtonName())==0) {
+						cout << "Temprary display PID exists in vector" << endl;
+						p->temp_datalinks++;
+						// Investigate need for datalinks
+						break;
+					}
+				}
+				// If the PID does not exist, add it
+				if(p == PIDs.end()) {
+					PIDs.emplace_back(HOTBUTTON_ParameterMenu_It->getSelectedButtonName());
+					PIDs.back().temp_datalinks++;
+					cout << "Added temporary display PID to vector" << endl;
+				}
+			
+				int textViewWidth = width/3 - 10;
+				int textViewHeight = (height-70) / PIDs.back().numElements;
+				
+				for(int i = 0; i < PIDs.back().numElements; i++) {
+					TextViews.emplace_back(width - width/3 - 5, height - (i*textViewHeight) - textViewHeight/2, textViewWidth, textViewHeight, "PIDElementView");
+					TextViews.back().addNewLineIdentifier("name", "Name: ");
+					TextViews.back().setLineIdentifierText("name", PIDs.back().elementNames[i]);
+					TextViews.back().addNewLineIdentifier("description", "Description: ");
+					TextViews.back().setLineIdentifierText("description", PIDs.back().elementDescriptions[i]);
+				}
+			}
+			
+			else{
+				std::vector<PID>::iterator p = PIDs.begin();
+				for(std::vector<PID>::iterator p = PIDs.begin();p!=PIDs.end();p++){
+					if(p->temp_datalinks != 0) {
+						break;
+					}
+				}
+				if(p!= PIDs.end()){
+					if(HOTBUTTON_ParameterMenu_It->getSelectedButtonName().compare(p->id) != 0) {
+						PIDs.erase(p);
+						TextViews.clear();
+					}
+				}
+				else {
+					// Something bad happened - could not find PID with temp datalinks
+				}
+				
+			}
+			
+			
+		}
 
+	
 
 		// All selections made, add item and PID
 		if(	!HOTBUTTON_GroupMenu_It->getSelectedButtonName().empty()

@@ -8,13 +8,14 @@
 # include "Gauge.h"
 # include "PID.h"
 # include "Menu.h"
+# include "TextView.h"
 #include <iostream>
 #include <algorithm>		// find_if
 #include "ConnectionManager.h"
 
 using namespace std;
 
-void DisplayObjectManager(std::vector<Button>&, std::vector<Gauge>&, std::vector<PID>&, std::vector<PID>&, ParmStatus*, std::vector<Menu>&);
+void DisplayObjectManager(std::vector<Button>&, std::vector<Gauge>&, std::vector<PID>&, std::vector<PID>&, ParmStatus*, std::vector<Menu>&, std::vector<TextView>&);
 
 
 

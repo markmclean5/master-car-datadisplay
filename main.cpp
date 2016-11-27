@@ -58,6 +58,7 @@ ApplicationMode previousMode = noMode;			// Previous application mode, for mode 
 vector<Button> DASHBOARD_HotButtons;
 vector<Gauge> DASHBOARD_Gauges;
 vector<Menu> DASHBOARD_Menus;
+vector<TextView> DASHBOARD_TextViews;
 
 
 
@@ -105,9 +106,10 @@ int main() {
 
 	// Vector size reservations, based on expected application usage, to minimize resize operations
 	PIDs.reserve(4);
-	DASHBOARD_Menus.reserve(4);
+	DASHBOARD_Menus.reserve(10);
 	DASHBOARD_HotButtons.reserve(4);
 	DASHBOARD_Gauges.reserve(4);
+	DASHBOARD_TextViews.reserve(6);			// Expected number of elements per PID
 
 	// Draw background wallpaper from JPEG, save as VGImage for efficient re-draw
 	//Image(0, 0, 800, 480, "/home/pi/master-car-datadisplay/wallpaper.jpg");
@@ -163,6 +165,7 @@ int main() {
 	
 	// PID support 		
 	vector<PID> SupportPIDs;			// PID support queries
+	SupportPIDs.reserve(7);
 	ParmStatus PIDSupportRequestStatus 	= unknown;
 	int currentPIDSupportRequest = 100;
 	bool PIDSupportRequestsComplete = false;
@@ -336,13 +339,22 @@ int main() {
 				auto CurrentGaugePID_It = find_if(PIDs.begin(), PIDs.end(), [&name](PID& obj) {return obj.command.compare(name) == 0;});
 				// TODO - Understand and fix
 				if(CurrentGaugePID_It != PIDs.end())
-					(it)->update((CurrentGaugePID_It)->getValue("element1"), (CurrentGaugePID_It)->getValueEngUnits("element1"));
+					(it)->update((CurrentGaugePID_It)->getValue((it)->getElementLink()), (CurrentGaugePID_It)->getValueEngUnits((it)->getElementLink()));
 			}
 			for (std::vector<Menu>::iterator it = DASHBOARD_Menus.begin(); it != DASHBOARD_Menus.end(); it++) {					// Update all menus
 				(it)->update(&loopTouch);
 			}
 			
-			DisplayObjectManager(DASHBOARD_HotButtons, DASHBOARD_Gauges, PIDs, SupportPIDs, &PIDSupportRequestStatus, DASHBOARD_Menus);								// Run DisplayObjectManager (current page dashboard hotbuttons, display objects, and PIDs)		
+			// Update temporary PID data  element display (if visible)
+			if(DASHBOARD_TextViews.size()>0 ){
+				for(std::vector<TextView>::iterator it = DASHBOARD_TextViews.begin(); it != DASHBOARD_TextViews.end(); it++) {
+					// Code to actually populate values in textview
+					
+					(it)->update();
+				}
+				
+			}			
+			DisplayObjectManager(DASHBOARD_HotButtons, DASHBOARD_Gauges, PIDs, SupportPIDs, &PIDSupportRequestStatus, DASHBOARD_Menus, DASHBOARD_TextViews);								// Run DisplayObjectManager (current page dashboard hotbuttons, display objects, and PIDs)		
 		} // End Mode 1
 
 			

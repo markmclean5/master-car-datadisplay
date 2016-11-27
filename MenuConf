@@ -168,9 +168,7 @@ extendedPIDMenu {
 HOTBUTTON_DisplayObjectMenu {
 	name = "HOTBUTTON_DisplayObjectMenu";
 	type = "...";
-	titled = "true";
-	titlePercentHeight = "9";
-	titleText = "Display Object";
+	titled = "false";
 	titleFontSize = "20";
 	titleColor = ["1.0", "0.0", "0.0", "1.0"];
 	scrollable = "false";
@@ -182,7 +180,7 @@ HOTBUTTON_DisplayObjectMenu {
 	borderColor = ["0.43", "0.43", "0.43", "0.0"];
 	backgroundColor = ["0.0", "0.0", "0.0", "0.6"];
 	pressDebounce = "500";
-	isHorizontal = "false";
+	isHorizontal = "true";
 	selectMode = "radio";
 	hideable = "false";
 	configureButtons = "true";

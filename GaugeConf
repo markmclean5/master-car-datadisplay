@@ -30,6 +30,7 @@
 # 0105 - Engine Coolant Temperature
 0105Gauge {
 	PIDLink = "01051";
+	elementLink = "ECT";
 	numRanges = "1";
 	borderColor = ["1.0", "1.0", "1.0", "1.0"];
 	backgroundColor = ["0.0", "0.0", "0.0", "0.5"];

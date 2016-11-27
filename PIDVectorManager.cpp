@@ -6,9 +6,7 @@ using namespace std;
 void PIDVectorManager(PIDVectorState* PIDVectorCurrentState, std::vector<PID>& PIDs, std::vector<PID>::iterator& CurrentPID, int* numPIDs, Serial* ELMSerialPtr, ApplicationMode* currentMode, uint64_t* secondLastPIDVectorUpdateTime, uint64_t* lastPIDVectorUpdateTime, uint64_t* loopTime ) {
 	if(*PIDVectorCurrentState == inactive && (PIDs.size() != 0)) {				// Initial vector activation
 		*PIDVectorCurrentState = active;
-		//cout << "Activating PID Vector" << endl;
-		
-		
+		//cout << "Activating PID Vector" << endl;	
 	}
 
 	
@@ -35,7 +33,8 @@ void PIDVectorManager(PIDVectorState* PIDVectorCurrentState, std::vector<PID>& P
 			//cout << "PID Vector active" << endl;
 			if(		(*currentMode == dashboardMode && CurrentPID->dashboard_datalinks != 0) ||
 					(*currentMode == plotMode && CurrentPID->plot_datalinks != 0) ||
-					(*currentMode == logMode && CurrentPID->log_datalinks != 0)) {
+					(*currentMode == logMode && CurrentPID->log_datalinks != 0) ||
+					CurrentPID->temp_datalinks !=0) {
 				//cout << "Requirements met to update PID - setting vector busy" << endl;
 				ELMSerialPtr->serialWrite((CurrentPID)->command);		// Request PID data if necessary
 				*PIDVectorCurrentState = busy;

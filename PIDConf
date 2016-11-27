@@ -388,7 +388,8 @@ TEST{
 	id = "0101";
 	num_data_bytes = "4";
 	num_elements = "1";
-	element1 {	
+	element1 {
+	};	
 };
 
 
@@ -695,15 +696,12 @@ TEST{
 };
 
 #0103 {
-#	fullName = "Fuel System Status";
-#	shortName = "Fuel Sts";
-#	type = "enum";
-#	numDataBytes = "2";
+#	full_name = "Fuel System Status";
+#	short_name = "Fuel Sts";
 #	command = "01031";
-	
+#	id = "01031";
+#	num_data_bytes = "2";
 #	num_enums = "2";
-
-	
 #	enum1{
 #	name = "Fuel Sys 1 Sts";
 #	start_bit = "0";
@@ -711,12 +709,9 @@ TEST{
 #	num_values = ;
 #	val1 = "1";
 #	val1_state = "Open loop - insufficient engine temp";
-	
 #	val2 = "2";
 #	val2_state = "Closed loop - using O2 sensor";
 
-	
-	
 #	};
 	
 	
@@ -725,65 +720,69 @@ TEST{
 
 
 0104 {
-	fullName = "Calculated Engine Load";
-	shortName = "Calc Load";
-	type = "value";
-	command = "0104";
-	supportedMinVal = "0";
-	supportedMaxVal = "100";
+	full_name = "Calculated Engine Load";
+	short_name = "Calc Load";
+	command = "01041";
+	id = "0104";
 	numDataBytes = "1";
-	AGain = "0.39215";
-	AOffset = "0";
-	BGain = "1";
-	BOffset = "0";
-	CGain = "1";
-	COffset = "0";
-	DGain = "1";
-	DOffset = "0";
-	TotalGain = "1";
-	TotalOffset = "0";
-	numRanges = "1";
-	range1{
-		scaling = "1";
-		rangeStart = "0";
-		rangeStop = "100";
-		engUnits = "pct";
-		simpleMALag = "1";
-		weightedMALag = "5";
-		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
+	num_elements = "1";
+	
+	element1{
+		type = "value";
+		name = "Calc Load";
+		description = "Calculated engine load, pct";
+		min_val = "0";
+		max_val = "100";
+		num_bytes = "1";
+		start_byte = "A";
+		A_gain = "0.39215";
+		A_offset = "0";
+		total_gain = "1";
+		total_offset = "0";
+		numRanges = "1";
+		range1{
+			scaling = "1";
+			range_start = "0";
+			range_stop = "100";
+			eng_units = "pct";
+		};
 	};
+	
 };
 
 
 
 0105 {
-	fullName = "Engine Coolant Temperature";
-	shortName = "ECT";
-	type = "value";
+	full_name = "Engine Coolant Temperature";
+	short_name = "ECT";
 	command = "01051";
-	supportedMinVal = "-40";
-	supportedMaxVal = "215";
-	numDataBytes = "1";
-	AGain = "1";
-	AOffset = "-40";
-	BGain = "1";
-	BOffset = "0";
-	CGain = "1";
-	COffset = "0";
-	DGain = "1";
-	DOffset = "0";
-	TotalGain = "1";
-	TotalOffset = "0";
-	numRanges = "1";
-	range1{
-		scaling = "1";
-		rangeStart = "-40";
-		rangeStop = "215";
-		engUnits = "degC";
-		simpleMALag = "1";
-		weightedMALag = "5";
-		weightedMACoeffs = ["0.2", "0.2", "0.2", "0.2", "0.2"];
+	id = "0105";
+	num_data_bytes = "1";
+	num_elements = "1";
+	
+	element1{
+		type = "value";
+		name = "ECT";
+		description = "Engine coolant temperature, deg C";
+		min_val = "-40";
+		max_val = "215";
+		num_bytes = "2";
+		start_byte = "A";
+		A_gain = "1";
+		A_offset = "-40";
+		B_gain = "1";
+		B_offset = "0";
+		total_gain = "1";
+		total_offset = "0";
+		num_ranges = "1";
+		range1{
+			scaling = "1";
+			range_start = "-40";
+			range_stop = "215";
+			eng_units = "degC";
+		};
 	};
+	
 };
 
 0106 {

@@ -25,6 +25,7 @@ private:
 
 	string gaugeIdentifier;
 	string PIDLink;
+	string elementLink;
 
 	int centerX;
 	int centerY;
@@ -102,6 +103,7 @@ public:
 
 	string getIdentifier(void);
 	string getPIDLink(void);
+	string getElementLink(void);
 
 private:
 	// Internally accessed methods (called within draw / update functions)

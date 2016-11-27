@@ -43,6 +43,7 @@ void Gauge::configure(string ident) {
 		cfg->parse("/home/pi/master-car-datadisplay/GaugeConf");
 		// Gauge attributes
 		PIDLink = parseString(cfg, gaugeIdentifier, "PIDLink");
+		elementLink = parseString(cfg, gaugeIdentifier, "elementLink");
 		numRanges = parseInt(cfg, gaugeIdentifier, "numRanges");
 		parseColor(cfg, gaugeIdentifier, borderColor, "borderColor");
 		parseColor(cfg, gaugeIdentifier, backgroundColor, "backgroundColor");
@@ -447,4 +448,7 @@ string Gauge::getIdentifier(void) {
 
 string Gauge::getPIDLink(void) {
 	return PIDLink;
+}
+string Gauge::getElementLink(void) {
+	return elementLink;
 }
